@@ -1,0 +1,9 @@
+# Go
+go.sum
+
+# OS
+.DS_Store
+
+# Editor
+.idea
+.vscode
