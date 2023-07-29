@@ -1,0 +1,78 @@
+syntax = "proto3";
+package comment;
+option go_package = "comment";
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+}
+
+message CommentInfo {
+  int64 Id = 1; // 视频评论id
+  UserInfo User =2; // 评论用户信息
+  string Content = 3; // 评论内容
+  string CreateDate = 4; // 评论发布日期，格式 mm-dd
+}
+
+message UserInfo {
+  int64 Id = 1; // 用户id
+  string Name = 2; // 用户名称
+  int64 FollowCount = 3; // 关注总数
+  int64 FollowerCount = 4; // 粉丝总数
+  bool IsFollow = 5; // true-已关注，false-未关注
+  string Avatar = 6; //用户头像
+  string BackgroundImage = 7; //用户个人页顶部大图
+  string Signature = 8; //个人简介
+  int64 TotalFavorited = 9; //获赞数量
+  int64 WorkCount = 10; //作品数量
+  int64 FavoriteCount = 11; //点赞数量
+}
+
+message CreateCommentReq {
+  int64 UserId = 1; // 用户id
+  int64 VideoId = 2; // 视频id
+  string CommentText = 3; // 评论内容
+}
+
+message CreateCommentRes {
+  Status Status = 1;
+  string ErrMsg = 2;
+}
+
+message DeleteCommentReq {
+  int64 UserId = 1; // 用户id
+  int64 CommentId = 2; // 评论id
+}
+
+message DeleteCommentRes {
+  Status Status = 1;
+  string ErrMsg = 2;
+}
+
+message ListCommentReq {
+  int64 UserId = 1; // 用户id
+  int64 VideoId = 2; // 视频id
+}
+
+message ListCommentRes {
+  Status Status = 1;
+  string ErrMsg = 2;
+  repeated CommentInfo Comments = 3; // 评论列表
+}
+
+message GetCommentCountReq {
+  int64 VideoId = 1; // 视频id
+}
+
+message GetCommentCountRes {
+  Status Status = 1;
+  string ErrMsg = 2;
+  int64 Count = 3; // 评论总数
+}
+
+service CommentService {
+  rpc CreateComment(CreateCommentReq) returns (CreateCommentRes);
+  rpc DeleteComment(DeleteCommentReq) returns (DeleteCommentRes);
+  rpc ListComment(ListCommentReq) returns (ListCommentRes);
+  rpc GetCommentCount(GetCommentCountReq) returns (GetCommentCountRes);
+}

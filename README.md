@@ -19,6 +19,7 @@
 │       ├── main.go
 │       ├── router.go
 │       └── router_gen.go
-└── pkg                            // 公共包
+├── pkg                            // 公共包
+└── sh                             // Shell脚本
 ```
 
