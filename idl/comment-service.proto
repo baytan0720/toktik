@@ -37,6 +37,7 @@ message CreateCommentReq {
 message CreateCommentRes {
   Status Status = 1;
   string ErrMsg = 2;
+  CommentInfo Comment = 3; // 评论信息
 }
 
 message DeleteCommentReq {
