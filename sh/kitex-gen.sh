@@ -15,3 +15,9 @@ mkdir -p "comment"
 cd "comment" || exit
 kitex -I ../../idl -module toktik -service comment comment-service.proto
 cd ..
+
+# relation
+mkdir -p "relation"
+cd "relation" || exit
+kitex -I ../../idl -module toktik -service relation relation-service.proto
+cd ..
