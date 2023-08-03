@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -27,7 +28,17 @@ func (api *UserAPI) Routes() []apiutil.Route {
 			Path:    "/douyin/user/login",
 			Handler: api.Login,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/douyin/user",
+			Handler: api.UserInfo,
+		},
 	}
+}
+
+func (api *UserAPI) UserInfo(c context.Context, ctx *app.RequestContext) {
+	// TODO
+	fmt.Println("UserInfo")
 }
 
 func (api *UserAPI) Register(c context.Context, ctx *app.RequestContext) {
