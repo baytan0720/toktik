@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# env
+go install github.com/cloudwego/kitex/tool/cmd/kitex@latest
+kitex -version || exit
+
 if [[ $(basename "$PWD") == "sh" ]]; then
     cd ..
 elif [[ $(basename "$PWD") != "toktik" ]]; then
