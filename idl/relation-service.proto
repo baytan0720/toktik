@@ -95,7 +95,7 @@ message FriendUser {
   int64 msg_type = 3; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
 }
 
-service CommentService {
+service RelationService {
   rpc GetFollow(GetFollowInfoReq) returns (GetFollowInfoRes);
   rpc Follow(FollowReq) returns (FollowRes);
   rpc Unfollow(UnfollowReq) returns (UnfollowRes);
