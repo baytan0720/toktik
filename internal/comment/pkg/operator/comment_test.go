@@ -22,7 +22,9 @@ func newMockDB(t *testing.T) *gorm.DB {
 func TestCommentOperator_CreateComment(t *testing.T) {
 	db := newMockDB(t)
 
-	o := NewCommentOperator(db)
+	o := NewCommentOperator(func() *gorm.DB {
+		return db
+	})
 	comment, err := o.CreateComment(1, 1, "test")
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), comment.VideoId)
@@ -40,7 +42,9 @@ func TestCommentOperator_GetComment(t *testing.T) {
 	}
 	db.Create(testCommentCase)
 
-	o := NewCommentOperator(db)
+	o := NewCommentOperator(func() *gorm.DB {
+		return db
+	})
 	comment, err := o.GetComment(testCommentCase.Id)
 	assert.NoError(t, err)
 	assert.Equal(t, testCommentCase.VideoId, comment.VideoId)
@@ -58,7 +62,9 @@ func TestCommentOperator_DeleteComment(t *testing.T) {
 	}
 	db.Create(testCommentCase)
 
-	o := NewCommentOperator(db)
+	o := NewCommentOperator(func() *gorm.DB {
+		return db
+	})
 	err := o.DeleteComment(testCommentCase.Id)
 	assert.NoError(t, err)
 	err = db.Where("id = ?", testCommentCase.Id).First(&model.Comment{}).Error
@@ -94,7 +100,9 @@ func TestCommentOperator_ListComment(t *testing.T) {
 		testCommentCaseA,
 	}
 
-	o := NewCommentOperator(db)
+	o := NewCommentOperator(func() *gorm.DB {
+		return db
+	})
 	comments, err := o.ListCommentOrderByCreatedAtDesc(testVideoId)
 	assert.NoError(t, err)
 	for i, comment := range comments {
@@ -127,7 +135,9 @@ func TestCommentOperator_CountComment(t *testing.T) {
 	db.Create(testCommentCaseB)
 	db.Create(testCommentCaseC)
 
-	o := NewCommentOperator(db)
+	o := NewCommentOperator(func() *gorm.DB {
+		return db
+	})
 	count, err := o.CountComment(testVideoId)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(3), count)
