@@ -4,9 +4,12 @@ go.sum
 # OS
 .DS_Store
 
-# Editor
+# IDE
 .idea
 .vscode
 
 # Output
 kitex_gen/
+
+# Config
+config.yaml
