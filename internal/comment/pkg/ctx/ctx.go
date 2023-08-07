@@ -12,10 +12,8 @@ type ServiceContext struct {
 
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
 func NewServiceContext() *ServiceContext {
-	// init database
-	db.Init("")
-
+	db.Init()
 	return &ServiceContext{
-		Operator: operator.NewCommentOperator(db.Instance()),
+		Operator: operator.NewCommentOperator(db.Instance),
 	}
 }
