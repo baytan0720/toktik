@@ -25,9 +25,3 @@ mkdir -p "relation"
 cd "relation" || exit
 kitex -I ../../idl -module toktik -service relation relation-service.proto
 cd ..
-
-# user
-mkdir -p "user"
-cd "user" || exit
-kitex -I ../../idl -module toktik -service user user-service.proto
-cd ..
