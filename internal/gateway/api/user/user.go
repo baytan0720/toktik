@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 
 	"toktik/internal/gateway/pkg/apiutil"
+	"toktik/internal/gateway/pkg/jwtutil"
 )
 
 type UserAPI struct{}
@@ -47,4 +48,12 @@ func (api *UserAPI) Register(c context.Context, ctx *app.RequestContext) {
 
 func (api *UserAPI) Login(c context.Context, ctx *app.RequestContext) {
 	// TODO
+
+	//登陆成功后
+	userid := 111
+	j := jwtutil.NewJwtUtil()
+	token, _ := j.GenerateToken(jwtutil.CreateClaims(userid))
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"token": token,
+	})
 }
