@@ -31,9 +31,3 @@ mkdir -p "user"
 cd "user" || exit
 kitex -I ../../idl -module toktik -service user user-service.proto
 cd ..
-
-# video
-mkdir -p "video"
-cd "video" || exit
-kitex -I ../../idl -module toktik -service video video-service.proto
-cd ..
