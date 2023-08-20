@@ -1,0 +1,87 @@
+syntax = "proto3";
+package favorite;
+option go_package = "favorite";
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+}
+
+message FavoriteInfo{
+  int64 video_id = 1;
+  int64 count = 2; //视频的点赞数
+  bool is_favorite = 3;  //用户是否点赞
+}
+
+message VideoInfo {
+  int64 id = 1;             // 视频唯一标识
+  UserInfo author = 2;      // 视频作者信息
+  string play_url = 3;      // 视频播放地址
+  string cover_url = 4;     // 视频封面地址
+  int64 favorite_count = 5; // 视频的点赞总数
+  int64 comment_count = 6;  // 视频的评论总数
+  bool is_favorite = 7;     // true-已点赞，false-未点赞
+  string title = 8;         // 视频标题
+}
+
+message UserInfo {
+  int64 id = 1;                // 用户id
+  string name = 2;             // 用户名称
+  int64 follow_count = 3;      // 关注总数
+  int64 follower_count = 4;    // 粉丝总数
+  bool is_follow = 5;          // true-已关注，false-未关注
+  string avatar = 6;           //用户头像
+  string background_image = 7; //用户个人页顶部大图
+  string signature = 8;        //个人简介
+  int64 total_favorited = 9;   //获赞数量
+  int64 work_count = 10;       //作品数量
+  int64 favorite_count = 11;   //点赞数量
+}
+
+message FavoriteReq {
+  int64 user_id = 1;  // 用户id
+  int64 video_id = 2; // 视频id
+}
+
+message FavoriteRes {
+  Status status = 1;   // 状态码
+  string err_msg = 2;  // 返回状态描述
+}
+
+message UnFavoriteReq {
+  int64 user_id = 1;  // 用户id
+  int64 video_id = 2; // 视频id
+}
+
+message UnFavoriteRes {
+  Status status = 1;
+  string err_msg = 2;
+}
+
+message ListFavoriteReq {
+  int64 user_id = 1;
+}
+
+message ListFavoriteRes {
+  Status status = 1;
+  string err_msg = 2;
+  repeated VideoInfo video_list = 3;
+}
+
+message GetFavoriteInfoReq {
+  int64 user_id = 1;     // 用户id
+  repeated int64 video_id_list = 2; // 要查询的视频的ID列表
+}
+
+message GetFavoriteInfoRes {
+  Status status = 1;     // 状态码
+  string err_msg = 2;    // 返回状态描述
+  repeated FavoriteInfo favorite_info_list = 3; //查询的视频的点赞信息
+}
+
+service FavoriteService {
+  rpc Favorite(FavoriteReq) returns (FavoriteRes);
+  rpc UnFavorite(UnFavoriteReq) returns (UnFavoriteRes);
+  rpc ListFavorite(ListFavoriteReq) returns (ListFavoriteRes);
+  rpc GetFavoriteInfo(GetFavoriteInfoReq) returns (GetFavoriteInfoRes);
+}
