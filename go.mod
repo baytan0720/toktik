@@ -6,9 +6,11 @@ require (
 	github.com/cloudwego/fastpb v0.0.4
 	github.com/cloudwego/hertz v0.6.6
 	github.com/cloudwego/kitex v0.6.2
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/hashicorp/consul/api v1.20.0
+	github.com/kitex-contrib/registry-consul v0.0.0-20230406075225-7d341f036654
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
 	google.golang.org/protobuf v1.31.0
@@ -30,7 +32,6 @@ require (
 	github.com/cloudwego/netpoll v0.4.0 // indirect
 	github.com/cloudwego/thriftgo v0.2.11 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
