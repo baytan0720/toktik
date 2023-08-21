@@ -37,3 +37,9 @@ mkdir -p "video"
 cd "video" || exit
 kitex -I ../../idl -module toktik -service video video-service.proto
 cd ..
+
+# message
+mkdir -p "message"
+cd "message" || exit
+kitex -I ../../idl -module toktik -service message message-service.proto
+cd ..

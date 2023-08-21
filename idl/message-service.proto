@@ -1,0 +1,62 @@
+syntax = "proto3";
+package message;
+option go_package = "message";
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+}
+
+message MessageInfo {
+  int64 id = 1; // 消息id
+  int64 to_user_id = 2; // 该消息接收者的id
+  int64 user_id =3; // 该消息发送者的id
+  string content = 4; // 消息内容
+  string create_time = 5; // 消息创建时间
+}
+
+message LastMessage {
+  string last_message = 1; // 最后一条消息
+  int64 to_user_id = 2; // 对应的用户
+  int64 message_type = 3; // 消息类型
+}
+
+message ListMessageReq {
+  int64 user_id= 1; // 用户id
+  int64 to_user_id = 2; // 对方用户id
+  int64 pre_msg_time=3;//上次最新消息的时间（新增字段-apk更新中）
+}
+
+message ListMessageRes {
+  Status status = 1; // 状态码，0-成功，其他值-失败
+  string err_msg = 2; // 返回状态描述
+  repeated MessageInfo message_list = 3; // 消息列表
+}
+
+message SendMessageReq {
+  string user_id = 1; // 用户id
+  int64 to_user_id = 2; // 对方用户id
+  string content = 3; // 消息内容
+}
+
+message SendMessageRes {
+  Status status = 1; // 状态码，0-成功，其他值-失败
+  string err_msg = 2; // 返回状态描述
+}
+
+message GetLastMessageReq {
+  int64 user_id = 1; // 当前用户id
+  repeated int64 to_user_id = 2; // 聊天列表的用户id
+}
+
+message GetLastMessageRes {
+  Status status = 1;                 // 状态码，0-成功，其他值-失败
+  string err_msg = 2;             // 返回状态描述
+  repeated LastMessage messages = 3; // 消息列表
+}
+
+service MessageService {
+  rpc ListMessage(ListMessageReq) returns (ListMessageRes) {}
+  rpc SendMessage(SendMessageReq) returns (SendMessageRes) {}
+  rpc GetLastMessage(GetLastMessageReq) returns (GetLastMessageRes) {}
+}
