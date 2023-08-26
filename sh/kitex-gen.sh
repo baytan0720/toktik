@@ -43,3 +43,15 @@ mkdir -p "message"
 cd "message" || exit
 kitex -I ../../idl -module toktik -service message message-service.proto
 cd ..
+
+# favorite
+mkdir -p "favorite"
+cd "favorite" || exit
+kitex -I ../../idl -module toktik -service favorite favorite-service.proto
+cd ..
+
+# feed
+mkdir -p "feed"
+cd "feed" || exit
+kitex -I ../../idl -module toktik -service feed feed-service.proto
+cd ..

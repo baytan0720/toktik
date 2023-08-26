@@ -1,19 +1,19 @@
 package ctx
 
 import (
-	"toktik/internal/comment/pkg/comment"
+	"toktik/internal/user/pkg/user"
 	"toktik/pkg/db"
 )
 
 // ServiceContext contains the components required by the service.
 type ServiceContext struct {
-	CommentService *comment.CommentService
+	UserService *user.UserService
 }
 
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
 func NewServiceContext() *ServiceContext {
 	db.Init()
 	return &ServiceContext{
-		CommentService: comment.NewCommentService(db.Instance),
+		UserService: user.NewUserService(db.Instance),
 	}
 }
