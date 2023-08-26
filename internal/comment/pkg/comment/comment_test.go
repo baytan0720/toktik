@@ -1,4 +1,4 @@
-package operator
+package comment
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ func newMockDB(t *testing.T) *gorm.DB {
 func TestCommentOperator_CreateComment(t *testing.T) {
 	db := newMockDB(t)
 
-	o := NewCommentOperator(func() *gorm.DB {
+	o := NewCommentService(func() *gorm.DB {
 		return db
 	})
 	comment, err := o.CreateComment(1, 1, "test")
@@ -42,7 +42,7 @@ func TestCommentOperator_GetComment(t *testing.T) {
 	}
 	db.Create(testCommentCase)
 
-	o := NewCommentOperator(func() *gorm.DB {
+	o := NewCommentService(func() *gorm.DB {
 		return db
 	})
 	comment, err := o.GetComment(testCommentCase.Id)
@@ -62,7 +62,7 @@ func TestCommentOperator_DeleteComment(t *testing.T) {
 	}
 	db.Create(testCommentCase)
 
-	o := NewCommentOperator(func() *gorm.DB {
+	o := NewCommentService(func() *gorm.DB {
 		return db
 	})
 	err := o.DeleteComment(testCommentCase.Id)
@@ -100,7 +100,7 @@ func TestCommentOperator_ListComment(t *testing.T) {
 		testCommentCaseA,
 	}
 
-	o := NewCommentOperator(func() *gorm.DB {
+	o := NewCommentService(func() *gorm.DB {
 		return db
 	})
 	comments, err := o.ListCommentOrderByCreatedAtDesc(testVideoId)
@@ -135,7 +135,7 @@ func TestCommentOperator_CountComment(t *testing.T) {
 	db.Create(testCommentCaseB)
 	db.Create(testCommentCaseC)
 
-	o := NewCommentOperator(func() *gorm.DB {
+	o := NewCommentService(func() *gorm.DB {
 		return db
 	})
 	count, err := o.CountComment(testVideoId)

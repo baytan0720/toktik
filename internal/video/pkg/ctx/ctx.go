@@ -1,19 +1,19 @@
 package ctx
 
 import (
-	"toktik/internal/comment/pkg/comment"
+	"toktik/internal/video/pkg/video"
 	"toktik/pkg/db"
 )
 
 // ServiceContext contains the components required by the service.
 type ServiceContext struct {
-	CommentService *comment.CommentService
+	VideoService *video.VideoService
 }
 
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
 func NewServiceContext() *ServiceContext {
 	db.Init()
 	return &ServiceContext{
-		CommentService: comment.NewCommentService(db.Instance),
+		VideoService: video.NewVideoService(db.Instance),
 	}
 }
