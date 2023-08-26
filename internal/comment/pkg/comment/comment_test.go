@@ -3,19 +3,17 @@ package comment
 import (
 	"testing"
 
-	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
 	"toktik/pkg/db/model"
+	"toktik/pkg/test/testutil"
 )
 
 func newMockDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file:toktik.db?&mode=memory"), &gorm.Config{})
-	require.NoError(t, err)
-	err = db.AutoMigrate(&model.Comment{})
-	require.NoError(t, err)
+	db := testutil.NewMockDB()
+	require.NoError(t, db.AutoMigrate(&model.Comment{}))
 	return db
 }
 
