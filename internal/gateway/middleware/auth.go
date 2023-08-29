@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
+	"toktik/internal/gateway/pkg/apiutil"
 	"toktik/internal/gateway/pkg/jwtutil"
 )
 
@@ -17,7 +18,8 @@ func AuthCheck(c context.Context, ctx *app.RequestContext) {
 	claims, err := jwtUtil.ParseToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-			"status_msg": err.Error(),
+			"status_code": apiutil.StatusFailed,
+			"status_msg":  err.Error(),
 		})
 		ctx.Abort()
 		return

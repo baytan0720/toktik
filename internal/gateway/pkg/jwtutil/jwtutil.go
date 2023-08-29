@@ -26,7 +26,7 @@ type JwtUtil struct {
 }
 
 type UserClaims struct {
-	UserId int `json:"user_id"`
+	UserId int64 `json:"user_id"`
 	jwt.StandardClaims
 }
 
@@ -72,7 +72,7 @@ func (j *JwtUtil) ParseToken(tokenStr string) (*UserClaims, error) {
 	}
 }
 
-func CreateClaims(id int) *UserClaims {
+func CreateClaims(id int64) *UserClaims {
 	return &UserClaims{
 		UserId: id,
 		StandardClaims: jwt.StandardClaims{

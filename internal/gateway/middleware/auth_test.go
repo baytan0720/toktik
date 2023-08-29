@@ -20,7 +20,7 @@ func TestAuthCheck(t *testing.T) {
 		ctx.Request.SetQueryString("token=" + token)
 		AuthCheck(context.Background(), ctx)
 		assert.Equal(t, 200, ctx.Response.StatusCode())
-		assert.Equal(t, 1, ctx.GetInt(CTX_USER_ID))
+		assert.Equal(t, int64(1), ctx.GetInt64(CTX_USER_ID))
 	})
 
 	t.Run("invalid token", func(t *testing.T) {
@@ -38,7 +38,6 @@ func TestAuthCheck(t *testing.T) {
 }
 
 func TestSoftAuthCheck(t *testing.T) {
-
 	t.Run("with token", func(t *testing.T) {
 		claims := jwtutil.CreateClaims(1)
 		token, err := jwtutil.NewJwtUtil().GenerateToken(claims)
@@ -48,13 +47,13 @@ func TestSoftAuthCheck(t *testing.T) {
 		ctx.Request.SetQueryString("token=" + token)
 		SoftAuthCheck(context.Background(), ctx)
 		assert.Equal(t, 200, ctx.Response.StatusCode())
-		assert.Equal(t, 1, ctx.GetInt(CTX_USER_ID))
+		assert.Equal(t, int64(1), ctx.GetInt64(CTX_USER_ID))
 	})
 
 	t.Run("without token", func(t *testing.T) {
 		ctx := app.NewContext(16)
 		SoftAuthCheck(context.Background(), ctx)
 		assert.Equal(t, 200, ctx.Response.StatusCode())
-		assert.Equal(t, 0, ctx.GetInt(CTX_USER_ID))
+		assert.Equal(t, int64(0), ctx.GetInt64(CTX_USER_ID))
 	})
 }
