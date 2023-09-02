@@ -1,6 +1,8 @@
 package comment
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
 	"toktik/pkg/db/model"
@@ -36,9 +38,18 @@ func (c *CommentService) GetComment(commentId int64) (*Comment, error) {
 	return comment, err
 }
 
-func (c *CommentService) DeleteComment(commentId int64) error {
+func (c *CommentService) DeleteComment(userId, commentId int64) error {
 	db := c.dbInstance()
-	return db.Where("id = ?", commentId).Delete(&Comment{}).Error
+
+	comment := &Comment{}
+	err := db.Where("id = ?", commentId).First(&comment).Error
+	if err != nil {
+		return err
+	}
+	if userId != comment.UserId {
+		return errors.New("user id not match")
+	}
+	return db.Delete(&comment).Error
 }
 
 func (c *CommentService) ListCommentOrderByCreatedAtDesc(videoId int64) ([]*Comment, error) {

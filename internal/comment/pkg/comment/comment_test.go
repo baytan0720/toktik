@@ -53,20 +53,37 @@ func TestCommentOperator_GetComment(t *testing.T) {
 func TestCommentOperator_DeleteComment(t *testing.T) {
 	db := newMockDB(t)
 
-	testCommentCase := &model.Comment{
-		VideoId: 10,
-		UserId:  10,
-		Content: "test comment",
-	}
-	db.Create(testCommentCase)
+	t.Run("success", func(t *testing.T) {
+		testCommentCase := &model.Comment{
+			VideoId: 10,
+			UserId:  10,
+			Content: "test comment",
+		}
+		db.Create(testCommentCase)
 
-	c := NewCommentService(func() *gorm.DB {
-		return db
+		c := NewCommentService(func() *gorm.DB {
+			return db
+		})
+		err := c.DeleteComment(10, testCommentCase.Id)
+		assert.NoError(t, err)
+		err = db.Where("id = ?", testCommentCase.Id).First(&model.Comment{}).Error
+		assert.Equal(t, gorm.ErrRecordNotFound, err)
 	})
-	err := c.DeleteComment(testCommentCase.Id)
-	assert.NoError(t, err)
-	err = db.Where("id = ?", testCommentCase.Id).First(&model.Comment{}).Error
-	assert.Equal(t, gorm.ErrRecordNotFound, err)
+
+	t.Run("unauthorized", func(t *testing.T) {
+		testCommentCase := &model.Comment{
+			VideoId: 10,
+			UserId:  10,
+			Content: "test comment",
+		}
+		db.Create(testCommentCase)
+
+		c := NewCommentService(func() *gorm.DB {
+			return db
+		})
+		err := c.DeleteComment(11, testCommentCase.Id)
+		assert.Error(t, err)
+	})
 }
 
 func TestCommentOperator_ListComment(t *testing.T) {
