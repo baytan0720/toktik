@@ -28,6 +28,6 @@ func Register(r *server.Hertz) {
 	apiutil.AddRouters(r, favorite.NewFavoriteApi())
 	apiutil.AddRouters(r, feed.NewFeedApi())
 	apiutil.AddRouters(r, message.NewMessageApi())
-	apiutil.AddRouters(r, relation.NewRelationApi())
+	apiutil.AddRouters(r, relation.NewRelationApi(resolver))
 	apiutil.AddRouters(r, publish.NewPublishApi())
 }
