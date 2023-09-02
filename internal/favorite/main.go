@@ -21,10 +21,10 @@ var (
 func init() {
 	flag.StringVar(&consulAddr, "consul", "47.115.209.46:8500", "consul address")
 	flag.StringVar(&configPath, "config", "", "config path")
-	flag.Parse()
 }
 
 func main() {
+	flag.Parse()
 	var conf config.Config
 	if configPath != "" {
 		conf = config.ReadConfigFromLocal(configPath)
