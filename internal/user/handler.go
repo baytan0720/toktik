@@ -148,8 +148,8 @@ func (s *UserServiceImpl) GetUserInfos(ctx context.Context, req *user.GetUserInf
 
 	// get user relation info
 	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 
 		res, err := s.svcCtx.RelationClient.GetFollowInfo(ctx, &relation.GetFollowInfoReq{
@@ -168,8 +168,8 @@ func (s *UserServiceImpl) GetUserInfos(ctx context.Context, req *user.GetUserInf
 	}()
 
 	// get user favorite info
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 
 		res, err := s.svcCtx.FavoriteClient.GetUserFavoriteInfo(ctx, &favorite.GetUserFavoriteInfoReq{
@@ -186,8 +186,8 @@ func (s *UserServiceImpl) GetUserInfos(ctx context.Context, req *user.GetUserInf
 	}()
 
 	// get user work count
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 
 		res, err := s.svcCtx.VideoClient.GetWorkCount(ctx, &video.GetWorkCountReq{

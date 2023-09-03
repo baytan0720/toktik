@@ -7,7 +7,7 @@ enum Status {
   ERROR = 1;
 }
 
-message User {
+message UserInfo {
   int64 id = 1; // 用户id
   string name = 2; // 用户名称
   int64 follow_count = 3; // 关注总数
@@ -21,9 +21,9 @@ message User {
   int64 favorite_count = 11; //点赞数量
 }
 
-message Video {
+message VideoInfo {
   int64 id = 1; // 视频唯一标识
-  User author = 2; // 视频作者信息
+  UserInfo author = 2; // 视频作者信息
   string play_url = 3; // 视频播放地址
   string cover_url = 4; // 视频封面地址
   int64 favorite_count = 5; // 视频的点赞总数
@@ -45,7 +45,7 @@ message ListVideoReq {
 message ListVideoRes {
   Status status = 1; // 状态码，0-成功，其他值-失败
   string err_msg = 2; // 返回状态描述
-  repeated Video video_list = 3; // 视频列表
+  repeated VideoInfo video_list = 3; // 视频列表
 }
 
 message PublishVideoReq {
@@ -67,7 +67,7 @@ message GetVideoReq {
 message GetVideoRes {
   Status status = 1;
   string err_msg = 2;
-  repeated Video video_list = 3;
+  repeated VideoInfo video_list = 3;
 }
 
 message GetWorkCountReq {
