@@ -54,8 +54,20 @@ message GetUserInfoRes {
   UserInfo user = 3; // 用户信息
 }
 
+message GetUserInfosReq {
+  int64 user_id = 1; // 请求方用户id
+  repeated int64 to_user_ids = 2; // 用户id
+}
+
+message GetUserInfosRes {
+  Status status = 1;
+  string err_msg = 2;
+  repeated UserInfo users = 3; // 用户信息
+}
+
 service UserService {
   rpc Register(RegisterReq) returns (RegisterRes);
   rpc Login(LoginReq) returns (LoginRes);
   rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoRes);
+  rpc GetUserInfos(GetUserInfosReq) returns (GetUserInfosRes);
 }

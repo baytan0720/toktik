@@ -32,6 +32,11 @@ message Video {
   string title = 8; // 视频标题
 }
 
+message WorkCountInfo {
+  int64 user_id = 1; // 用户id
+  int64 work_count = 2; // 作品数量
+}
+
 message ListVideoReq {
   int64 user_id = 1; // 用户id
   int64 to_user_id = 2; // 目标用户id
@@ -65,8 +70,19 @@ message GetVideoRes {
   repeated Video video_list = 3;
 }
 
+message GetWorkCountReq {
+  repeated int64 user_id_list = 1; // 用户id
+}
+
+message GetWorkCountRes {
+  Status status = 1;
+  string err_msg = 2;
+  repeated WorkCountInfo work_count_list = 3;
+}
+
 service VideoService {
   rpc ListVideo(ListVideoReq) returns (ListVideoRes) {}
   rpc PublishVideo(PublishVideoReq) returns (PublishVideoRes) {}
   rpc GetVideo(GetVideoReq) returns (GetVideoRes) {}
+  rpc GetWorkCount(GetWorkCountReq) returns (GetWorkCountRes) {}
 }
