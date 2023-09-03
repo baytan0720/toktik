@@ -7,12 +7,6 @@ enum Status {
   ERROR = 1;
 }
 
-message FavoriteInfo{
-  int64 video_id = 1;
-  int64 count = 2; //视频的点赞数
-  bool is_favorite = 3;  //用户是否点赞
-}
-
 message VideoInfo {
   int64 id = 1;             // 视频唯一标识
   UserInfo author = 2;      // 视频作者信息
@@ -36,6 +30,18 @@ message UserInfo {
   int64 total_favorited = 9;   //获赞数量
   int64 work_count = 10;       //作品数量
   int64 favorite_count = 11;   //点赞数量
+}
+
+message VideoFavoriteInfo {
+  int64 video_id = 1;
+  int64 count = 2; //视频的点赞数
+  bool is_favorite = 3;  //用户是否点赞
+}
+
+message UserFavoriteInfo {
+  int64 user_id = 1;
+  int64 favorite_count = 2; //用户的点赞数
+  int64 total_favorited = 3; //用户获赞总数
 }
 
 message FavoriteReq {
@@ -68,20 +74,31 @@ message ListFavoriteRes {
   repeated VideoInfo video_list = 3;
 }
 
-message GetFavoriteInfoReq {
+message GetVideoFavoriteInfoReq {
   int64 user_id = 1;     // 用户id
   repeated int64 video_id_list = 2; // 要查询的视频的ID列表
 }
 
-message GetFavoriteInfoRes {
+message GetVideoFavoriteInfoRes {
   Status status = 1;     // 状态码
   string err_msg = 2;    // 返回状态描述
-  repeated FavoriteInfo favorite_info_list = 3; //查询的视频的点赞信息
+  repeated VideoFavoriteInfo favorite_info_list = 3; //查询的视频的点赞信息
+}
+
+message GetUserFavoriteInfoReq {
+  repeated int64 user_id_list = 1; // 要查询的用户的ID列表
+}
+
+message GetUserFavoriteInfoRes {
+  Status status = 1;     // 状态码
+  string err_msg = 2;    // 返回状态描述
+  repeated UserFavoriteInfo favorite_info_list = 3; //查询的用户的点赞信息
 }
 
 service FavoriteService {
   rpc Favorite(FavoriteReq) returns (FavoriteRes);
   rpc UnFavorite(UnFavoriteReq) returns (UnFavoriteRes);
   rpc ListFavorite(ListFavoriteReq) returns (ListFavoriteRes);
-  rpc GetFavoriteInfo(GetFavoriteInfoReq) returns (GetFavoriteInfoRes);
+  rpc GetVideoFavoriteInfo(GetVideoFavoriteInfoReq) returns (GetVideoFavoriteInfoRes);
+  rpc GetUserFavoriteInfo(GetUserFavoriteInfoReq) returns (GetUserFavoriteInfoRes);
 }

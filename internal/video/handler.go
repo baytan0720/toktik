@@ -35,3 +35,9 @@ func (s *VideoServiceImpl) GetVideo(ctx context.Context, req *video.GetVideoReq)
 	// TODO: Your code here...
 	return
 }
+
+// GetWorkCount implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) GetWorkCount(ctx context.Context, req *video.GetWorkCountReq) (resp *video.GetWorkCountRes, err error) {
+	// TODO: Your code here...
+	return
+}

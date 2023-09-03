@@ -36,8 +36,14 @@ func (s *FavoriteServiceImpl) ListFavorite(ctx context.Context, req *favorite.Li
 	return
 }
 
-// GetFavoriteInfo implements the FavoriteServiceImpl interface.
-func (s *FavoriteServiceImpl) GetFavoriteInfo(ctx context.Context, req *favorite.GetFavoriteInfoReq) (resp *favorite.GetFavoriteInfoRes, err error) {
+// GetVideoFavoriteInfo implements the FavoriteServiceImpl interface.
+func (s *FavoriteServiceImpl) GetVideoFavoriteInfo(ctx context.Context, req *favorite.GetVideoFavoriteInfoReq) (resp *favorite.GetVideoFavoriteInfoRes, err error) {
+	// TODO: Your code here...
+	return
+}
+
+// GetUserFavoriteInfo implements the FavoriteServiceImpl interface.
+func (s *FavoriteServiceImpl) GetUserFavoriteInfo(ctx context.Context, req *favorite.GetUserFavoriteInfoReq) (resp *favorite.GetUserFavoriteInfoRes, err error) {
 	// TODO: Your code here...
 	return
 }
