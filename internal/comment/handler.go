@@ -82,7 +82,7 @@ func convert2CommentUserInfo(user *user.UserInfo) *comment.UserInfo {
 		Name:            user.Name,
 		FollowCount:     user.FollowCount,
 		FollowerCount:   user.FollowerCount,
-		IsFollow:        false,
+		IsFollow:        user.IsFollow,
 		Avatar:          user.Avatar,
 		BackgroundImage: user.BackgroundImage,
 		Signature:       user.Signature,

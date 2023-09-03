@@ -49,9 +49,9 @@ func (api *PublishApi) Routes() []apiutil.Route {
 }
 
 type ListResp struct {
-	StatusCode int            `json:"status_code"`
-	StatusMsg  string         `json:"status_msg"`
-	VideoList  []*video.Video `json:"video_list"`
+	StatusCode int                `json:"status_code"`
+	StatusMsg  string             `json:"status_msg"`
+	VideoList  []*video.VideoInfo `json:"video_list"`
 }
 
 func (api *PublishApi) List(c context.Context, ctx *app.RequestContext) {
