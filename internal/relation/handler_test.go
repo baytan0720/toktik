@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -48,27 +47,27 @@ func TestRelationServiceImpl_GetFollowInfo(t *testing.T) {
 			}),
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.GetFollowInfo(context.Background(), &relation.GetFollowInfoReq{
+		resp, _ := svc.GetFollowInfo(context.Background(), &relation.GetFollowInfoReq{
 			UserId:       1,
 			ToUserIdList: []int64{1},
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("success", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{User: &user.UserInfo{}}, nil).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Users: []*user.UserInfo{&user.UserInfo{Id: 2}}}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
 		// ToUser
-		resp, err := svc.GetFollowInfo(context.Background(), &relation.GetFollowInfoReq{
+		resp, _ := svc.GetFollowInfo(context.Background(), &relation.GetFollowInfoReq{
 			UserId:       1,
 			ToUserIdList: []int64{2},
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 1, len(resp.FollowInfoList))
 		assert.Equal(t, int64(0), resp.FollowInfoList[0].FollowerCount)
 		assert.Equal(t, int64(0), resp.FollowInfoList[0].FollowCount)
@@ -88,26 +87,26 @@ func TestRelationServiceImpl_Follow(t *testing.T) {
 			UserClient: mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.Follow(context.Background(), &relation.FollowReq{
+		resp, _ := svc.Follow(context.Background(), &relation.FollowReq{
 			UserId:   1,
 			ToUserId: 2,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("get user info failed", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{Status: user.Status_ERROR}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.Follow(context.Background(), &relation.FollowReq{
+		resp, _ := svc.Follow(context.Background(), &relation.FollowReq{
 			UserId:   1,
 			ToUserId: 2,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -118,11 +117,11 @@ func TestRelationServiceImpl_Follow(t *testing.T) {
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.Follow(context.Background(), &relation.FollowReq{
+		resp, _ := svc.Follow(context.Background(), &relation.FollowReq{
 			UserId:   1,
 			ToUserId: 2,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 	})
 }
 
@@ -135,11 +134,11 @@ func TestRelationServiceImpl_Unfollow(t *testing.T) {
 			}),
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.Unfollow(context.Background(), &relation.UnfollowReq{
+		resp, _ := svc.Unfollow(context.Background(), &relation.UnfollowReq{
 			UserId:   1,
 			ToUserId: 2,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -153,16 +152,16 @@ func TestRelationServiceImpl_Unfollow(t *testing.T) {
 		})
 
 		svcCtx := &ctx.ServiceContext{
-			RelationService: relationsvc.NewRelationService(func() *gorm.DB{
+			RelationService: relationsvc.NewRelationService(func() *gorm.DB {
 				return db
 			}),
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.Unfollow(context.Background(), &relation.UnfollowReq{
+		resp, _ := svc.Unfollow(context.Background(), &relation.UnfollowReq{
 			UserId:   1,
 			ToUserId: 2,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 	})
 }
 
@@ -175,40 +174,39 @@ func TestRelationServiceImpl_ListFollow(t *testing.T) {
 			}),
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.ListFollow(context.Background(), &relation.ListFollowReq{
+		resp, _ := svc.ListFollow(context.Background(), &relation.ListFollowReq{
 			UserId: 1,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("get user info failed", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Status: user.Status_ERROR}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		resp, err := svc.ListFollow(context.Background(), &relation.ListFollowReq{
+		resp, _ := svc.ListFollow(context.Background(), &relation.ListFollowReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 0, len(resp.Users))
-		assert.NotNil(t, resp)
 	})
 
 	t.Run("success", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{User: &user.UserInfo{}}, nil).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Users: []*user.UserInfo{}}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.ListFollow(context.Background(), &relation.ListFollowReq{
+		resp, _ := svc.ListFollow(context.Background(), &relation.ListFollowReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 	})
 }
 
@@ -221,40 +219,40 @@ func TestRelationServiceImpl_ListFollower(t *testing.T) {
 			}),
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
+		resp, _ := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
 			UserId: 1,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("get user info failed", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Status: user.Status_ERROR}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		resp, err := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
+		resp, _ := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 0, len(resp.Users))
 		assert.NotNil(t, resp)
 	})
 
 	t.Run("success", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{User: &user.UserInfo{}}, nil).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Users: []*user.UserInfo{}}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			RelationService: newMockRelationService(t),
 			UserClient:      mockUserClient,
 		}
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
+		resp, _ := svc.ListFollower(context.Background(), &relation.ListFollowerReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 	})
 }
 
@@ -268,10 +266,10 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		}
 
 		svc := NewRelationServiceImpl(svcCtx)
-		_, err := svc.ListFriend(context.Background(), &relation.ListFriendReq{
+		resp, _ := svc.ListFriend(context.Background(), &relation.ListFriendReq{
 			UserId: 1,
 		})
-		assert.Error(t, err)
+		assert.Equal(t, relation.Status_ERROR, resp.Status)
 	})
 
 	t.Run("get messages failed", func(t *testing.T) {
@@ -290,9 +288,9 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		})
 
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{User: &user.UserInfo{}}, nil).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Users: []*user.UserInfo{{Id: 2}}}, nil).AnyTimes()
 		mockMessageClient := newMockMessageClient(t)
-		mockMessageClient.EXPECT().GetLastMessage(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockMessageClient.EXPECT().GetLastMessage(gomock.Any(), gomock.Any()).Return(&message.GetLastMessageRes{Status: message.Status_ERROR}, nil).AnyTimes()
 
 		svcCtx := &ctx.ServiceContext{
 			RelationService: relationsvc.NewRelationService(func() *gorm.DB {
@@ -303,11 +301,14 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		}
 		svc := NewRelationServiceImpl(svcCtx)
 
-		resp, err := svc.ListFriend(context.Background(), &relation.ListFriendReq{
+		resp, _ := svc.ListFriend(context.Background(), &relation.ListFriendReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 1, len(resp.Users))
+		assert.Equal(t, true, resp.Users[0].User.IsFollow)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowCount)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowerCount)
 		assert.Equal(t, int64(0), resp.Users[0].MsgType)
 		assert.Equal(t, "", resp.Users[0].Message)
 	})
@@ -328,11 +329,12 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		})
 
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Status: user.Status_ERROR}, nil).AnyTimes()
 		mockMessageClient := newMockMessageClient(t)
 		mockMessageClient.EXPECT().GetLastMessage(gomock.Any(), gomock.Any()).Return(&message.GetLastMessageRes{Messages: []*message.LastMessage{&message.LastMessage{
+			ToUserId:    2,
 			LastMessage: "test message",
-			MessageType: 0,
+			MessageType: 1,
 		}}}, nil).AnyTimes()
 
 		svcCtx := &ctx.ServiceContext{
@@ -344,12 +346,16 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		}
 		svc := NewRelationServiceImpl(svcCtx)
 
-		resp, err := svc.ListFriend(context.Background(), &relation.ListFriendReq{
+		resp, _ := svc.ListFriend(context.Background(), &relation.ListFriendReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 1, len(resp.Users))
-		assert.Nil(t, resp.Users[0])
+		assert.Equal(t, true, resp.Users[0].User.IsFollow)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowCount)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowerCount)
+		assert.Equal(t, int64(1), resp.Users[0].MsgType)
+		assert.Equal(t, "test message", resp.Users[0].Message)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -368,11 +374,12 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		})
 
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{User: &user.UserInfo{}}, nil).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfos(gomock.Any(), gomock.Any()).Return(&user.GetUserInfosRes{Users: []*user.UserInfo{{Id: 2}}}, nil).AnyTimes()
 		mockMessageClient := newMockMessageClient(t)
 		mockMessageClient.EXPECT().GetLastMessage(gomock.Any(), gomock.Any()).Return(&message.GetLastMessageRes{Messages: []*message.LastMessage{&message.LastMessage{
+			ToUserId:    2,
 			LastMessage: "test message",
-			MessageType: 0,
+			MessageType: 1,
 		}}}, nil).AnyTimes()
 
 		svcCtx := &ctx.ServiceContext{
@@ -384,12 +391,15 @@ func TestRelationServiceImpl_ListFriend(t *testing.T) {
 		}
 		svc := NewRelationServiceImpl(svcCtx)
 
-		resp, err := svc.ListFriend(context.Background(), &relation.ListFriendReq{
+		resp, _ := svc.ListFriend(context.Background(), &relation.ListFriendReq{
 			UserId: 1,
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, relation.Status_OK, resp.Status)
 		assert.Equal(t, 1, len(resp.Users))
-		assert.Equal(t, int64(0), resp.Users[0].MsgType)
+		assert.Equal(t, true, resp.Users[0].User.IsFollow)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowCount)
+		assert.Equal(t, int64(1), resp.Users[0].User.FollowerCount)
+		assert.Equal(t, int64(1), resp.Users[0].MsgType)
 		assert.Equal(t, "test message", resp.Users[0].Message)
 	})
 
