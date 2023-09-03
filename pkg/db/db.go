@@ -2,11 +2,9 @@ package db
 
 import (
 	"fmt"
-	"log"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
+	"log"
 	"toktik/pkg/config"
 	"toktik/pkg/db/model"
 )

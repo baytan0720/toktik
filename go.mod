@@ -3,7 +3,6 @@ module toktik
 go 1.20
 
 require (
-	github.com/cloudwego/fastpb v0.0.4
 	github.com/cloudwego/hertz v0.6.6
 	github.com/cloudwego/kitex v0.6.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -15,7 +14,6 @@ require (
 	github.com/kitex-contrib/registry-consul v0.0.0-20230406075225-7d341f036654
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
-	google.golang.org/protobuf v1.31.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.2
 )
@@ -30,6 +28,7 @@ require (
 	github.com/chenzhuoyu/iasm v0.0.0-20230222070914-0b1b64b0e762 // indirect
 	github.com/choleraehyq/pid v0.0.16 // indirect
 	github.com/cloudwego/configmanager v0.2.0 // indirect
+	github.com/cloudwego/fastpb v0.0.4 // indirect
 	github.com/cloudwego/frugal v0.1.6 // indirect
 	github.com/cloudwego/netpoll v0.4.0 // indirect
 	github.com/cloudwego/thriftgo v0.2.11 // indirect
@@ -82,6 +81,7 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.22.5 // indirect

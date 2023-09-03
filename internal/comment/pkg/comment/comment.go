@@ -54,7 +54,7 @@ func (c *CommentService) DeleteComment(userId, commentId int64) error {
 
 func (c *CommentService) ListCommentOrderByCreatedAtDesc(videoId int64) ([]*Comment, error) {
 	db := c.dbInstance()
-	comments := []*Comment{}
+	var comments []*Comment
 	err := db.Where("video_id = ?", videoId).Order("created_at desc").Find(&comments).Error
 	return comments, err
 }

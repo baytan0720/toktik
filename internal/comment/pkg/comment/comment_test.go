@@ -1,12 +1,10 @@
 package comment
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-
+	"testing"
 	"toktik/pkg/db/model"
 	"toktik/pkg/test/testutil"
 )
