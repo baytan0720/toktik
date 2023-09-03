@@ -29,5 +29,5 @@ func Register(r *server.Hertz) {
 	apiutil.AddRouters(r, feed.NewFeedApi(resolver))
 	apiutil.AddRouters(r, message.NewMessageApi())
 	apiutil.AddRouters(r, relation.NewRelationApi())
-	apiutil.AddRouters(r, publish.NewPublishApi())
+	apiutil.AddRouters(r, publish.NewPublishApi(resolver))
 }
