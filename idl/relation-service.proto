@@ -96,7 +96,7 @@ message FriendUser {
 }
 
 service RelationService {
-  rpc GetFollow(GetFollowInfoReq) returns (GetFollowInfoRes);
+  rpc GetFollowInfo(GetFollowInfoReq) returns (GetFollowInfoRes);
   rpc Follow(FollowReq) returns (FollowRes);
   rpc Unfollow(UnfollowReq) returns (UnfollowRes);
   rpc ListFollow(ListFollowReq) returns (ListFollowRes);

@@ -7,7 +7,7 @@ enum Status {
   ERROR = 1;
 }
 
-message User {
+message UserInfo {
   int64 id = 1; // 用户id
   string name = 2; // 用户名称
   int64 follow_count = 3; // 关注总数
@@ -21,15 +21,20 @@ message User {
   int64 favorite_count = 11; //点赞数量
 }
 
-message Video {
+message VideoInfo {
   int64 id = 1; // 视频唯一标识
-  User author = 2; // 视频作者信息
+  UserInfo author = 2; // 视频作者信息
   string play_url = 3; // 视频播放地址
   string cover_url = 4; // 视频封面地址
   int64 favorite_count = 5; // 视频的点赞总数
   int64 comment_count = 6; // 视频的评论总数
   bool is_favorite = 7; // true-已点赞，false-未点赞
   string title = 8; // 视频标题
+}
+
+message WorkCountInfo {
+  int64 user_id = 1; // 用户id
+  int64 work_count = 2; // 作品数量
 }
 
 message ListVideoReq {
@@ -40,7 +45,7 @@ message ListVideoReq {
 message ListVideoRes {
   Status status = 1; // 状态码，0-成功，其他值-失败
   string err_msg = 2; // 返回状态描述
-  repeated Video video_list = 3; // 视频列表
+  repeated VideoInfo video_list = 3; // 视频列表
 }
 
 message PublishVideoReq {
@@ -62,11 +67,35 @@ message GetVideoReq {
 message GetVideoRes {
   Status status = 1;
   string err_msg = 2;
-  repeated Video video_list = 3;
+  repeated VideoInfo video_list = 3;
+}
+
+message GetWorkCountReq {
+  repeated int64 user_id_list = 1; // 用户id
+}
+
+message GetWorkCountRes {
+  Status status = 1;
+  string err_msg = 2;
+  repeated WorkCountInfo work_count_list = 3;
+}
+
+message FeedReq {
+  int64 user_id=1;
+  string latest_time = 2; // 可选参数，限制返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
+}
+
+message FeedRes{
+  Status status = 1; // 状态码，0-成功，其他值-失败
+  string err_msg = 2; // 返回状态描述
+  repeated VideoInfo video_list = 3; // 视频列表
+  string next_time = 4; // 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
 }
 
 service VideoService {
   rpc ListVideo(ListVideoReq) returns (ListVideoRes) {}
   rpc PublishVideo(PublishVideoReq) returns (PublishVideoRes) {}
   rpc GetVideo(GetVideoReq) returns (GetVideoRes) {}
+  rpc GetWorkCount(GetWorkCountReq) returns (GetWorkCountRes) {}
+  rpc Feed(FeedReq) returns (FeedRes) {}
 }

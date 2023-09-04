@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
+
+	"gorm.io/gorm"
 
 	"toktik/internal/comment/kitex_gen/comment"
 	"toktik/internal/comment/pkg/ctx"
@@ -48,8 +51,17 @@ func (s *CommentServiceImpl) CreateComment(ctx context.Context, req *comment.Cre
 
 // DeleteComment implements the CommentServiceImpl interface.
 func (s *CommentServiceImpl) DeleteComment(ctx context.Context, req *comment.DeleteCommentReq) (resp *comment.DeleteCommentRes, err error) {
-	// TODO: Your code here...
-	return
+	resp = &comment.DeleteCommentRes{}
+	err = s.svcCtx.CommentService.DeleteComment(req.UserId, req.CommentId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, errors.New("user id not match")) {
+			resp.Status = comment.Status_ERROR
+			resp.ErrMsg = err.Error()
+		} else {
+			return nil, err
+		}
+	}
+	return resp, nil
 }
 
 // ListComment implements the CommentServiceImpl interface.
@@ -70,7 +82,7 @@ func convert2CommentUserInfo(user *user.UserInfo) *comment.UserInfo {
 		Name:            user.Name,
 		FollowCount:     user.FollowCount,
 		FollowerCount:   user.FollowerCount,
-		IsFollow:        false,
+		IsFollow:        user.IsFollow,
 		Avatar:          user.Avatar,
 		BackgroundImage: user.BackgroundImage,
 		Signature:       user.Signature,

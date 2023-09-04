@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"toktik/pkg/config"
+	"toktik/pkg/db/model"
 )
 
 var db *gorm.DB
@@ -40,6 +41,10 @@ func Use(cfg config.Config) error {
 	}
 	close()
 	db = newDB
+	err = db.AutoMigrate(&model.User{}, &model.Video{}, &model.Comment{}, &model.Relation{})
+	if err != nil {
+		return err
+	}
 	log.Printf("db changed: %v:%v\n", cfg.Get(config.KEY_MYSQL_HOST), cfg.Get(config.KEY_MYSQL_PORT))
 	return nil
 }

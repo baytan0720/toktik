@@ -32,6 +32,7 @@ func main() {
 		conf = config.ReadConfigFromConsul(consulAddr)
 	}
 	conf.Set("name", "video")
+	conf.Set("consul", consulAddr)
 
 	r, err := consul.NewConsulRegister(consulAddr)
 	if err != nil {
