@@ -56,13 +56,13 @@ func (api *FeedApi) Feed(c context.Context, ctx *app.RequestContext) {
 	})
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &FeedResp{
+		ctx.JSON(http.StatusOK, &FeedResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &FeedResp{
+		ctx.JSON(http.StatusOK, &FeedResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})

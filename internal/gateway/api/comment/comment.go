@@ -59,7 +59,7 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 		} else {
 			err = err2
 		}
-		ctx.JSON(http.StatusBadRequest, &ActionResp{
+		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -73,13 +73,13 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 			Content: ctx.Query("comment_text"),
 		})
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, &ActionResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  err.Error(),
 			})
 			return
 		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusBadRequest, &ActionResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  resp.ErrMsg,
 			})
@@ -93,7 +93,7 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 	case 2:
 		commentId, err := strconv.ParseInt(ctx.Query("comment_id"), 10, 64)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, &ActionResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  err.Error(),
 			})
@@ -104,13 +104,13 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 			CommentId: commentId,
 		})
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, &ActionResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  err.Error(),
 			})
 			return
 		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusBadRequest, &ActionResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  resp.ErrMsg,
 			})
@@ -133,7 +133,7 @@ func (api *CommentApi) List(c context.Context, ctx *app.RequestContext) {
 	userId := ctx.GetInt64(middleware.CTX_USER_ID)
 	videoId, err := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -144,13 +144,13 @@ func (api *CommentApi) List(c context.Context, ctx *app.RequestContext) {
 		VideoId: videoId,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})

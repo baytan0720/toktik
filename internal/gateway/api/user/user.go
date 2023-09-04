@@ -64,7 +64,7 @@ func (api *UserAPI) UserInfo(c context.Context, ctx *app.RequestContext) {
 	toUserId, err := strconv.ParseInt(ctx.Query("user_id"), 10, 64)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, &UserInfoRes{
+		ctx.JSON(http.StatusOK, &UserInfoRes{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 			Info:       nil,
@@ -79,13 +79,13 @@ func (api *UserAPI) UserInfo(c context.Context, ctx *app.RequestContext) {
 		ToUserId: toUserId,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &UserInfoRes{
+		ctx.JSON(http.StatusOK, &UserInfoRes{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &UserInfoRes{
+		ctx.JSON(http.StatusOK, &UserInfoRes{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})
@@ -110,13 +110,13 @@ func (api *UserAPI) Register(c context.Context, ctx *app.RequestContext) {
 		Password: ctx.Query("password"),
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &RegisterRes{
+		ctx.JSON(http.StatusOK, &RegisterRes{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &RegisterRes{
+		ctx.JSON(http.StatusOK, &RegisterRes{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})
@@ -144,13 +144,13 @@ func (api *UserAPI) Login(c context.Context, ctx *app.RequestContext) {
 		Password: ctx.Query("password"),
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &LoginResp{
+		ctx.JSON(http.StatusOK, &LoginResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &LoginResp{
+		ctx.JSON(http.StatusOK, &LoginResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})
