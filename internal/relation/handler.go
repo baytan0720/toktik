@@ -67,12 +67,16 @@ func (s *RelationServiceImpl) Follow(ctx context.Context, req *relation.FollowRe
 	resp = &relation.FollowRes{}
 
 	// 获取用户信息
-	if res, _ := s.svcCtx.UserClient.GetUserInfo(ctx, &user.GetUserInfoReq{
+	if res, err := s.svcCtx.UserClient.GetUserInfo(ctx, &user.GetUserInfoReq{
 		UserId:   req.UserId,
 		ToUserId: req.ToUserId,
-	}); res.Status != user.Status_OK {
+	}); err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = "用户信息获取失败"
+		resp.ErrMsg = err.Error()
+		return
+	} else if res.Status != user.Status_OK {
+		resp.Status = relation.Status_ERROR
+		resp.ErrMsg = res.ErrMsg
 		return
 	}
 	err := s.svcCtx.RelationService.Follow(req.UserId, req.ToUserId)
@@ -129,9 +133,9 @@ func (s *RelationServiceImpl) ListFollow(ctx context.Context, req *relation.List
 		}
 		resp.Users = append(resp.Users, userId2UserInfo[toUserId])
 	}
-	if res, _ := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
+	if res, err := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
 		ToUserIds: userIdList,
-	}); res.Status == user.Status_OK {
+	}); err == nil && res.Status == user.Status_OK {
 		for i, userInfo := range res.Users {
 			userInfo.IsFollow = true
 			userInfo.FollowCount = userId2UserInfo[userInfo.Id].FollowCount
@@ -183,9 +187,9 @@ func (s *RelationServiceImpl) ListFollower(ctx context.Context, req *relation.Li
 		}
 		resp.Users = append(resp.Users, userId2UserInfo[toUserId])
 	}
-	if res, _ := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
+	if res, err := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
 		ToUserIds: userIdList,
-	}); res.Status == user.Status_OK {
+	}); err == nil && res.Status == user.Status_OK {
 		for i, userInfo := range res.Users {
 			userInfo.IsFollow = userId2UserInfo[userInfo.Id].IsFollow
 			userInfo.FollowCount = userId2UserInfo[userInfo.Id].FollowCount
@@ -240,10 +244,10 @@ func (s *RelationServiceImpl) ListFriend(ctx context.Context, req *relation.List
 			}
 		}
 
-		if res, _ := s.svcCtx.MessageClient.GetLastMessage(ctx, &message.GetLastMessageReq{
+		if res, err := s.svcCtx.MessageClient.GetLastMessage(ctx, &message.GetLastMessageReq{
 			UserId:   userId,
 			ToUserId: friendList,
-		}); res.Status == message.Status_OK {
+		}); err == nil && res.Status == message.Status_OK {
 			for _, lastMessage := range res.Messages {
 				userId2LastMessage[lastMessage.ToUserId] = lastMessage
 			}
@@ -277,9 +281,9 @@ func (s *RelationServiceImpl) ListFriend(ctx context.Context, req *relation.List
 			}
 		}
 
-		if res, _ := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
+		if res, err := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
 			ToUserIds: friendList,
-		}); res.Status == user.Status_OK {
+		}); err == nil && res.Status == user.Status_OK {
 			for _, userInfo := range res.Users {
 				userInfo.IsFollow = true
 				userInfo.FollowCount = userId2UserInfo[userInfo.Id].FollowCount
