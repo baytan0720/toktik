@@ -2,7 +2,6 @@ package video
 
 import (
 	"gorm.io/gorm"
-
 	"toktik/pkg/db/model"
 )
 
@@ -60,4 +59,22 @@ func (s *VideoService) CountWork(userId int64) (int64, error) {
 	}
 
 	return count, nil
+}
+
+func (s *VideoService) GetFeed(userId int64, latestTime string) ([]*Video, string, error) {
+	db := s.dbInstance()
+
+	videos := make([]*Video, 0)
+
+	if err := db.Where("user_id = ? AND created_at > ?", userId, latestTime).
+		Order("created_at desc").Find(&videos).Error; err != nil {
+		return nil, "", err
+	}
+
+	nextTime := latestTime
+	if len(videos) > 0 {
+		nextTime = videos[0].CreatedAt.Format("2006-01-02 15:04:05")
+	}
+
+	return videos, nextTime, nil
 }
