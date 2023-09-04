@@ -43,7 +43,7 @@ func TestUserAPI_Publish(t *testing.T) {
 		ctx.Request.SetBodyRaw(data)
 		api.Action(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := PublishResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -73,7 +73,7 @@ func TestUserAPI_Publish(t *testing.T) {
 		ctx.Request.SetBodyRaw(data)
 		api.Action(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := PublishResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -122,7 +122,7 @@ func TestUserAPI_List(t *testing.T) {
 		ctx.Request.SetQueryString("user_id=10")
 		api.List(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := ListResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -144,7 +144,7 @@ func TestUserAPI_List(t *testing.T) {
 		ctx.Request.SetQueryString("user_id=10")
 		api.List(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := PublishResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)

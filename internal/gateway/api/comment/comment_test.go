@@ -34,7 +34,7 @@ func TestUserAPI_Action(t *testing.T) {
 		ctx.Request.SetQueryString("video_id=10&action_type=1&comment_text='that's awesome!'")
 		api.Action(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -56,7 +56,7 @@ func TestUserAPI_Action(t *testing.T) {
 		ctx.Request.SetQueryString("video_id=10&action_type=1&comment_text='that's awesome!'")
 		api.Action(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -105,7 +105,7 @@ func TestUserAPI_List(t *testing.T) {
 		ctx.Request.SetQueryString("video_id=10")
 		api.List(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := ListResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -127,7 +127,7 @@ func TestUserAPI_List(t *testing.T) {
 		ctx.Request.SetQueryString("video_id=10")
 		api.List(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := ListResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)

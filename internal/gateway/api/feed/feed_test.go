@@ -34,7 +34,7 @@ func TestUserAPI_Feed(t *testing.T) {
 		ctx.Request.SetQueryString("latest_time='string'")
 		api.Feed(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := FeedResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -56,7 +56,7 @@ func TestUserAPI_Feed(t *testing.T) {
 		ctx.Request.SetQueryString("latest_time='string'")
 		api.Feed(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := FeedResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)

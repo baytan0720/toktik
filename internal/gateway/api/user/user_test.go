@@ -34,7 +34,7 @@ func TestUserAPI_Login(t *testing.T) {
 		ctx.Request.SetQueryString("username=test_user&password=123456")
 		api.Login(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := LoginResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -56,7 +56,7 @@ func TestUserAPI_Login(t *testing.T) {
 		ctx.Request.SetQueryString("username=test_user&password=123456")
 		api.Login(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := LoginResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -100,7 +100,7 @@ func TestUserAPI_Register(t *testing.T) {
 		ctx.Request.SetQueryString("username=test_user&password=123456")
 		api.Register(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := LoginResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -122,7 +122,7 @@ func TestUserAPI_Register(t *testing.T) {
 		ctx.Request.SetQueryString("username=test_user&password=123456")
 		api.Register(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := LoginResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -166,7 +166,7 @@ func TestUserAPI_GetUserInfo(t *testing.T) {
 		ctx.Request.SetQueryString("user_id=10")
 		api.UserInfo(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusInternalServerError, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := UserInfoRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
@@ -188,7 +188,7 @@ func TestUserAPI_GetUserInfo(t *testing.T) {
 		ctx.Request.SetQueryString("user_id=10")
 		api.UserInfo(context.Background(), ctx)
 
-		assert.Equal(t, http.StatusBadRequest, ctx.Response.StatusCode())
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
 		payload := UserInfoRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)

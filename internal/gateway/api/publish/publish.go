@@ -58,7 +58,7 @@ func (api *PublishApi) List(c context.Context, ctx *app.RequestContext) {
 	userId := ctx.GetInt64(middleware.CTX_USER_ID)
 	toUserId, err := strconv.ParseInt(ctx.Query("user_id"), 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -69,13 +69,13 @@ func (api *PublishApi) List(c context.Context, ctx *app.RequestContext) {
 		ToUserId: toUserId,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &ListResp{
+		ctx.JSON(http.StatusOK, &ListResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})
@@ -103,7 +103,7 @@ func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 	body := &PublishReq{}
 	err := json.Unmarshal(ctx.Request.Body(), body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, &PublishResp{
+		ctx.JSON(http.StatusOK, &PublishResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -113,7 +113,7 @@ func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 	j := jwtutil.NewJwtUtil()
 	claim, err := j.ParseToken(body.Token)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, &PublishResp{
+		ctx.JSON(http.StatusOK, &PublishResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -126,13 +126,13 @@ func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 		Title:  body.Title,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, &PublishResp{
+		ctx.JSON(http.StatusOK, &PublishResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
 		return
 	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusBadRequest, &PublishResp{
+		ctx.JSON(http.StatusOK, &PublishResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  resp.ErrMsg,
 		})
