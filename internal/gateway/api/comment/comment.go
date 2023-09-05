@@ -30,13 +30,13 @@ func (api *CommentApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/comment/action",
+			Path:    "/douyin/comment/action/",
 			Handler: api.Action,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/comment/list",
+			Path:    "/douyin/comment/list/",
 			Handler: api.List,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},

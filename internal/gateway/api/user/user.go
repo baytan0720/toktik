@@ -36,17 +36,17 @@ func (api *UserAPI) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/user/register",
+			Path:    "/douyin/user/register/",
 			Handler: api.Register,
 		},
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/user/login",
+			Path:    "/douyin/user/login/",
 			Handler: api.Login,
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/user",
+			Path:    "/douyin/user/",
 			Handler: api.UserInfo,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},

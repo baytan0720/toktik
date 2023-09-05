@@ -30,25 +30,25 @@ func (api *RelationApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/relation/action",
+			Path:    "/douyin/relation/action/",
 			Handler: api.Action,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/relation/follow/list",
+			Path:    "/douyin/relation/follow/list/",
 			Handler: api.FollowList,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/relation/follower/list",
+			Path:    "/douyin/relation/follower/list/",
 			Handler: api.FollowerList,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/relation/friend/list",
+			Path:    "/douyin/relation/friend/list/",
 			Handler: api.FriendList,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},

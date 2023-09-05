@@ -2,7 +2,8 @@ package publish
 
 import (
 	"context"
-	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,15 +37,13 @@ func (api *PublishApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/publish/action",
+			Path:    "/douyin/publish/action/",
 			Handler: api.Action,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/publish/list",
+			Path:    "/douyin/publish/list/",
 			Handler: api.List,
-			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 	}
 }
@@ -95,14 +94,15 @@ type PublishResp struct {
 }
 
 type PublishReq struct {
-	Data  []byte `json:"data"`
-	Title string `json:"title"`
-	Token string `json:"token"`
+	Token string                `json:"token" form:"token" query:"token"` // 用户鉴权token
+	Data  *multipart.FileHeader `form:"data"`                                               // 视频数据
+	Title string                `json:"title" form:"title" query:"title"` // 视频标题
 }
 
 func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 	body := &PublishReq{}
-	err := json.Unmarshal(ctx.Request.Body(), body)
+
+	err := ctx.Bind(&body)
 	if err != nil {
 		ctx.JSON(http.StatusOK, &PublishResp{
 			StatusCode: apiutil.StatusFailed,
@@ -110,6 +110,7 @@ func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
+
 	//The token is put into the body in this request,so we authenticate here
 	j := jwtutil.NewJwtUtil()
 	claim, err := j.ParseToken(body.Token)
@@ -121,9 +122,38 @@ func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
+	file, err := body.Data.Open()
+	if err != nil {
+		ctx.JSON(http.StatusOK, &PublishResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+
+	defer func(file multipart.File) {
+		err := file.Close()
+		if err != nil {
+			ctx.JSON(http.StatusOK, &PublishResp{
+				StatusCode: apiutil.StatusFailed,
+				StatusMsg:  err.Error(),
+			})
+			return
+		}
+	}(file)
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		ctx.JSON(http.StatusOK, &PublishResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+
 	resp, err := api.publishClient.PublishVideo(c, &video.PublishVideoReq{
 		UserId: claim.UserId,
-		Data:   body.Data,
+		Data:   fileBytes,
 		Title:  body.Title,
 	})
 	if err != nil {
