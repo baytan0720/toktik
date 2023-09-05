@@ -3,29 +3,26 @@ package feed
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/discovery"
 
-	"toktik/internal/feed/kitex_gen/feed"
-	"toktik/internal/feed/kitex_gen/feed/feedservice"
 	"toktik/internal/gateway/middleware"
 	"toktik/internal/gateway/pkg/apiutil"
-)
-
-var (
-	FeedFail = "fail to get feed"
+	"toktik/internal/video/kitex_gen/video"
+	"toktik/internal/video/kitex_gen/video/videoservice"
 )
 
 type FeedApi struct {
-	feedClient feedservice.Client
+	videoClient videoservice.Client
 }
 
 func NewFeedApi(r discovery.Resolver) *FeedApi {
 	return &FeedApi{
-		feedClient: feedservice.MustNewClient("feed", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
+		videoClient: videoservice.MustNewClient("video", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
 	}
 }
 
@@ -41,16 +38,23 @@ func (api *FeedApi) Routes() []apiutil.Route {
 }
 
 type FeedResp struct {
-	StatusCode int               `json:"status_code"`
-	StatusMsg  string            `json:"status_msg"`
-	NextTime   string            `json:"next_time"`
-	VideoList  []*feed.VideoInfo `json:"video_list"`
+	StatusCode int                `json:"status_code"`
+	StatusMsg  string             `json:"status_msg"`
+	NextTime   int64              `json:"next_time"`
+	VideoList  []*video.VideoInfo `json:"video_list"`
 }
 
 func (api *FeedApi) Feed(c context.Context, ctx *app.RequestContext) {
-	latestTime := ctx.Query("latest_time")
+	latestTime, err := strconv.ParseInt(ctx.Query("latest_time"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusOK, &FeedResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  "invalid latest_time",
+		})
+		return
+	}
 
-	resp, err := api.feedClient.Feed(c, &feed.FeedReq{
+	resp, err := api.videoClient.Feed(c, &video.FeedReq{
 		UserId:     ctx.GetInt64(middleware.CTX_USER_ID),
 		LatestTime: latestTime,
 	})

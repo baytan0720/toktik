@@ -38,13 +38,13 @@ func (api *RelationApi) Routes() []apiutil.Route {
 			Method:  http.MethodGet,
 			Path:    "/douyin/relation/follow/list",
 			Handler: api.FollowList,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
+			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
 			Path:    "/douyin/relation/follower/list",
 			Handler: api.FollowerList,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
+			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
@@ -61,15 +61,16 @@ type ActionResp struct {
 }
 
 func (api *RelationApi) Action(c context.Context, ctx *app.RequestContext) {
-	actionType, err1 := strconv.Atoi(ctx.Query("action_type"))
-	toUserId, err2 := strconv.ParseInt(ctx.Query("to_user_id"), 10, 64)
-	if err1 != nil || err2 != nil {
-		var err error
-		if err1 != nil {
-			err = err1
-		} else {
-			err = err2
-		}
+	actionType, err := strconv.Atoi(ctx.Query("action_type"))
+	if err != nil {
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	toUserId, err := strconv.ParseInt(ctx.Query("to_user_id"), 10, 64)
+	if err != nil {
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
@@ -95,7 +96,9 @@ func (api *RelationApi) Action(c context.Context, ctx *app.RequestContext) {
 			})
 			return
 		}
-		break
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusOK,
+		})
 	case 2:
 		resp, err := api.relationClient.Unfollow(c, &relation.UnfollowReq{
 			UserId:   ctx.GetInt64(middleware.CTX_USER_ID),
@@ -114,17 +117,16 @@ func (api *RelationApi) Action(c context.Context, ctx *app.RequestContext) {
 			})
 			return
 		}
-		break
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusOK,
+		})
 	default:
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  "fail to relation",
+			StatusMsg:  "action_type error",
 		})
-		break
 	}
-	ctx.JSON(http.StatusOK, &ActionResp{
-		StatusCode: apiutil.StatusOK,
-	})
+
 }
 
 type FollowListResp struct {

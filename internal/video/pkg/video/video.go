@@ -61,3 +61,15 @@ func (s *VideoService) CountWork(userId int64) (int64, error) {
 
 	return count, nil
 }
+
+func (s *VideoService) GetFeed(latestTime int64) ([]*Video, error) {
+	db := s.dbInstance()
+
+	videos := make([]*Video, 0)
+	err := db.Where("created_at < ?", latestTime).Order("created_at desc").Limit(20).Find(&videos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return videos, nil
+}

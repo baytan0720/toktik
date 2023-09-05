@@ -36,6 +36,26 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
+// Feed mocks base method.
+func (m *MockClient) Feed(ctx context.Context, Req *video.FeedReq, callOptions ...callopt.Option) (*video.FeedRes, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, Req}
+	for _, a := range callOptions {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Feed", varargs...)
+	ret0, _ := ret[0].(*video.FeedRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Feed indicates an expected call of Feed.
+func (mr *MockClientMockRecorder) Feed(ctx, Req interface{}, callOptions ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, Req}, callOptions...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Feed", reflect.TypeOf((*MockClient)(nil).Feed), varargs...)
+}
+
 // GetVideo mocks base method.
 func (m *MockClient) GetVideo(ctx context.Context, Req *video.GetVideoReq, callOptions ...callopt.Option) (*video.GetVideoRes, error) {
 	m.ctrl.T.Helper()

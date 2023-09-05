@@ -38,12 +38,13 @@ func (api *PublishApi) Routes() []apiutil.Route {
 			Method:  http.MethodPost,
 			Path:    "/douyin/publish/action",
 			Handler: api.Action,
+			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
 			Path:    "/douyin/publish/list",
 			Handler: api.List,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
+			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 	}
 }

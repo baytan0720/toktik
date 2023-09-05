@@ -18,8 +18,8 @@ import (
 	usersvc "toktik/internal/user/pkg/user"
 	"toktik/internal/video/kitex_gen/video"
 	mock_favoriteservice "toktik/pkg/test/mock/favorite"
-	mock_videoservice "toktik/pkg/test/mock/publish"
 	mock_relationservice "toktik/pkg/test/mock/relation"
+	mock_videoservice "toktik/pkg/test/mock/video"
 	"toktik/pkg/test/testutil"
 )
 

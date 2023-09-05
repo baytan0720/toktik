@@ -35,7 +35,7 @@ func TestUserAPI_Favorite(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := FavoriteResp{}
+		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
 		assert.Equal(t, "rpc error", payload.StatusMsg)
@@ -57,7 +57,7 @@ func TestUserAPI_Favorite(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := FavoriteResp{}
+		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
 		assert.Equal(t, FavoriteFail, payload.StatusMsg)
@@ -78,7 +78,7 @@ func TestUserAPI_Favorite(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := FavoriteResp{}
+		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
 	})
