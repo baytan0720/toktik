@@ -38,7 +38,7 @@ func (api *CommentApi) Routes() []apiutil.Route {
 			Method:  http.MethodGet,
 			Path:    "/douyin/comment/list",
 			Handler: api.List,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
+			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 	}
 }
@@ -50,15 +50,16 @@ type ActionResp struct {
 }
 
 func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
-	actionType, err1 := strconv.Atoi(ctx.Query("action_type"))
-	videoId, err2 := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
-	if err1 != nil || err2 != nil {
-		var err error
-		if err1 != nil {
-			err = err1
-		} else {
-			err = err2
-		}
+	actionType, err := strconv.Atoi(ctx.Query("action_type"))
+	if err != nil {
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	videoId, err := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
+	if err != nil {
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
@@ -89,7 +90,6 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 			StatusCode: apiutil.StatusOK,
 			Comment:    resp.Comment,
 		})
-		break
 	case 2:
 		commentId, err := strconv.ParseInt(ctx.Query("comment_id"), 10, 64)
 		if err != nil {
@@ -119,7 +119,11 @@ func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusOK,
 		})
-		break
+	default:
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  "action_type error",
+		})
 	}
 }
 

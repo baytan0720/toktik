@@ -278,6 +278,103 @@ func (s *VideoServiceImpl) GetWorkCount(ctx context.Context, req *video.GetWorkC
 	return
 }
 
+// Feed implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedReq) (resp *video.FeedRes, err error) {
+	resp = &video.FeedRes{}
+
+	videoList, err := s.svcCtx.VideoService.GetFeed(req.LatestTime)
+	if err != nil {
+		resp.Status = video.Status_ERROR
+		resp.ErrMsg = err.Error()
+		return
+	}
+	resp.NextTime = videoList[len(videoList)-1].CreatedAt.UnixMilli()
+
+	id2VideoInfo := make(map[int64]*video.VideoInfo)
+	userIdList := make([]int64, 0, len(videoList))
+	resp.VideoList = make([]*video.VideoInfo, 0, len(videoList))
+	videoIdList := make([]int64, 0, len(videoList))
+	for _, v := range videoList {
+		videoInfo := video.VideoInfo{
+			Id:       v.Id,
+			PlayUrl:  v.PlayUrl,
+			CoverUrl: v.CoverUrl,
+			Title:    v.Title,
+		}
+		resp.VideoList = append(resp.VideoList, &videoInfo)
+		id2VideoInfo[v.Id] = &videoInfo
+		videoIdList = append(videoIdList, v.Id)
+		userIdList = append(userIdList, v.UserId)
+	}
+
+	wg := sync.WaitGroup{}
+
+	// get user info
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
+			UserId:    req.UserId,
+			ToUserIds: userIdList,
+		})
+		if err != nil || res.Status != user.Status_OK {
+			return
+		}
+
+		id2UserInfo := make(map[int64]*video.UserInfo)
+		for _, userInfo := range res.Users {
+			id2UserInfo[userInfo.Id] = convert2VideoUserInfo(userInfo)
+		}
+
+		for _, info := range resp.VideoList {
+			info.Author = id2UserInfo[info.Author.Id]
+		}
+	}()
+
+	// get favorite count
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.FavoriteClient.GetVideoFavoriteInfo(ctx, &favorite.GetVideoFavoriteInfoReq{
+			UserId:      req.UserId,
+			VideoIdList: videoIdList,
+		})
+		if err != nil || res.Status != favorite.Status_OK {
+			return
+		}
+
+		for _, info := range res.FavoriteInfoList {
+			videoInfo := id2VideoInfo[info.VideoId]
+			videoInfo.FavoriteCount = info.Count
+			videoInfo.IsFavorite = info.IsFavorite
+		}
+	}()
+
+	// get comment count
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.CommentClient.GetCommentCount(ctx, &comment.GetCommentCountReq{
+			VideoIdList: videoIdList,
+		})
+		if err != nil || res.Status != comment.Status_OK {
+			return
+		}
+
+		for _, info := range res.CommentCountList {
+			videoInfo := id2VideoInfo[info.VideoId]
+			videoInfo.CommentCount = info.Count
+		}
+	}()
+
+	wg.Wait()
+
+	return resp, nil
+}
+
 // ReadFrameAsJpeg
 // 从视频流中截取一帧并返回 需要在本地环境中安装ffmpeg并将bin添加到环境变量
 func readFrameAsJpeg(filePath string) ([]byte, error) {

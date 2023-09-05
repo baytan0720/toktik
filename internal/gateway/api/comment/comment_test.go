@@ -71,7 +71,7 @@ func TestUserAPI_Action(t *testing.T) {
 
 		info := &comment.CommentInfo{
 			Content:    "that's awesome!",
-			CreateDate: "string",
+			CreateDate: "10-12",
 			Id:         10,
 			User:       nil,
 		}
@@ -88,7 +88,7 @@ func TestUserAPI_Action(t *testing.T) {
 		payload := ActionResp{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
-		assert.Equal(t, info, payload.Comment)
+		assert.EqualValues(t, info, payload.Comment)
 	})
 }
 

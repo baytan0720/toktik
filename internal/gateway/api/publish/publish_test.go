@@ -14,12 +14,12 @@ import (
 	"toktik/internal/gateway/pkg/apiutil"
 	"toktik/internal/gateway/pkg/jwtutil"
 	"toktik/internal/video/kitex_gen/video"
-	mock_publishservice "toktik/pkg/test/mock/publish"
+	mock_videoservice "toktik/pkg/test/mock/video"
 )
 
-func newMockPublishClient(t *testing.T) *mock_publishservice.MockClient {
+func newMockPublishClient(t *testing.T) *mock_videoservice.MockClient {
 	ctl := gomock.NewController(t)
-	return mock_publishservice.NewMockClient(ctl)
+	return mock_videoservice.NewMockClient(ctl)
 }
 
 func TestUserAPI_Publish(t *testing.T) {

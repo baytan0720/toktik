@@ -42,21 +42,28 @@ func (api *FavoriteApi) Routes() []apiutil.Route {
 			Method:  http.MethodGet,
 			Path:    "/douyin/favorite/list",
 			Handler: api.List,
-			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
+			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},
 	}
 }
 
-type FavoriteResp struct {
+type ActionResp struct {
 	StatusCode int    `json:"status_code"`
 	StatusMsg  string `json:"status_msg"`
 }
 
 func (api *FavoriteApi) Action(c context.Context, ctx *app.RequestContext) {
 	actionType, err := strconv.Atoi(ctx.Query("action_type"))
-	videoId, err1 := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
-	if err != nil || err1 != nil {
-		ctx.JSON(http.StatusOK, &FavoriteResp{
+	if err != nil {
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	videoId, err := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
 		})
@@ -70,49 +77,48 @@ func (api *FavoriteApi) Action(c context.Context, ctx *app.RequestContext) {
 			UserId:  ctx.GetInt64(middleware.CTX_USER_ID),
 		})
 		if err != nil {
-			ctx.JSON(http.StatusOK, &FavoriteResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  err.Error(),
 			})
 			return
 		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusOK, &FavoriteResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  resp.ErrMsg,
 			})
 			return
 		}
-		break
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusOK,
+		})
 	case 2:
 		resp, err := api.favoriteClient.UnFavorite(c, &favorite.UnFavoriteReq{
 			VideoId: videoId,
 			UserId:  ctx.GetInt64(middleware.CTX_USER_ID),
 		})
 		if err != nil {
-			ctx.JSON(http.StatusOK, &FavoriteResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  err.Error(),
 			})
 			return
 		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusOK, &FavoriteResp{
+			ctx.JSON(http.StatusOK, &ActionResp{
 				StatusCode: apiutil.StatusFailed,
 				StatusMsg:  resp.ErrMsg,
 			})
 			return
 		}
-		break
-	default:
-		ctx.JSON(http.StatusOK, &FavoriteResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusOK,
 		})
-		return
+	default:
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  "action_type error",
+		})
 	}
-
-	ctx.JSON(http.StatusOK, &FavoriteResp{
-		StatusCode: apiutil.StatusOK,
-	})
 }
 
 type ListResp struct {

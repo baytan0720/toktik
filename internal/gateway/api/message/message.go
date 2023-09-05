@@ -88,15 +88,16 @@ type ActionResp struct {
 }
 
 func (api *MessageApi) Action(c context.Context, ctx *app.RequestContext) {
-	actionType, err1 := strconv.Atoi(ctx.Query("action_type"))
-	toUserId, err2 := strconv.ParseInt(ctx.Query("to_user_id"), 10, 64)
-	if err1 != nil || err2 != nil {
-		var err error
-		if err1 != nil {
-			err = err1
-		} else {
-			err = err2
-		}
+	actionType, err := strconv.Atoi(ctx.Query("action_type"))
+	if err != nil {
+		ctx.JSON(http.StatusOK, &ActionResp{
+			StatusCode: apiutil.StatusFailed,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	toUserId, err := strconv.ParseInt(ctx.Query("to_user_id"), 10, 64)
+	if err != nil {
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
 			StatusMsg:  err.Error(),
@@ -126,12 +127,10 @@ func (api *MessageApi) Action(c context.Context, ctx *app.RequestContext) {
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusOK,
 		})
-		break
 	default:
 		ctx.JSON(http.StatusOK, &ActionResp{
 			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  "fail to send message",
+			StatusMsg:  "action_type error",
 		})
-		return
 	}
 }
