@@ -111,23 +111,6 @@ services:
       - backend
     restart: always
 
-  feed:
-    build:
-      context: ./internal/feed
-    environment:
-      - TZ=${TZ}
-    links:
-      - mysql
-      - redis
-      - consul
-    depends_on:
-      - mysql
-      - redis
-      - consul
-    networks:
-      - backend
-    restart: always
-
   comment:
     build:
       context: ./internal/comment

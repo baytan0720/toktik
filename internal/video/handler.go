@@ -288,6 +288,11 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedReq) (resp *
 		resp.ErrMsg = err.Error()
 		return
 	}
+	if len(videoList) == 0 {
+		resp.Status = video.Status_ERROR
+		resp.ErrMsg = "没有更多视频了"
+		return
+	}
 	resp.NextTime = videoList[len(videoList)-1].CreatedAt.UnixMilli()
 
 	id2VideoInfo := make(map[int64]*video.VideoInfo)
