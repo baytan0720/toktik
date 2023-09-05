@@ -8,6 +8,7 @@ import (
 	"image/jpeg"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/minio/minio-go/v6"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
@@ -315,4 +316,112 @@ func convert2VideoUserInfo(user *user.UserInfo) *video.UserInfo {
 		WorkCount:       user.WorkCount,
 		FavoriteCount:   user.FavoriteCount,
 	}
+}
+
+// Feed implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedReq) (resp *video.FeedRes, err error) {
+	// TODO: Your code here...
+	resp = &video.FeedRes{}
+
+	latestTime := req.LatestTime
+	userId := req.UserId
+
+	if latestTime == "" {
+		nowTime := time.Now().UnixMilli()
+		curTime := time.Unix(0, nowTime*int64(time.Millisecond))
+		latestTime = curTime.Format("2006-01-02 15:04:05")
+	}
+
+	videoList, nextTime, err := s.svcCtx.VideoService.GetFeed(userId, latestTime)
+
+	id2VideoInfo := make(map[int64]*video.VideoInfo)
+	userIdList := make([]int64, 0, len(videoList))
+	resp.VideoList = make([]*video.VideoInfo, 0, len(videoList))
+	videoIdList := make([]int64, 0, len(videoList))
+
+	if err != nil {
+		resp.Status = video.Status_ERROR
+		resp.ErrMsg = err.Error()
+		return
+	}
+
+	for _, v := range videoList {
+		videoInfo := video.VideoInfo{
+			Id:       v.Id,
+			PlayUrl:  v.PlayUrl,
+			CoverUrl: v.CoverUrl,
+			Title:    v.Title,
+		}
+		resp.VideoList = append(resp.VideoList, &videoInfo)
+		userIdList = append(userIdList, v.UserId)
+	}
+
+	resp.NextTime = nextTime
+
+	wg := sync.WaitGroup{}
+
+	// get user info
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.UserClient.GetUserInfos(ctx, &user.GetUserInfosReq{
+			UserId:    req.UserId,
+			ToUserIds: userIdList,
+		})
+		if err != nil || res.Status != user.Status_OK {
+			return
+		}
+
+		id2UserInfo := make(map[int64]*video.UserInfo)
+		for _, userInfo := range res.Users {
+			id2UserInfo[userInfo.Id] = convert2VideoUserInfo(userInfo)
+		}
+
+		for _, info := range resp.VideoList {
+			info.Author = id2UserInfo[info.Author.Id]
+		}
+	}()
+
+	// get favorite count
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.FavoriteClient.GetVideoFavoriteInfo(ctx, &favorite.GetVideoFavoriteInfoReq{
+			UserId:      req.UserId,
+			VideoIdList: videoIdList,
+		})
+		if err != nil || res.Status != favorite.Status_OK {
+			return
+		}
+
+		for _, info := range res.FavoriteInfoList {
+			videoInfo := id2VideoInfo[info.VideoId]
+			videoInfo.FavoriteCount = info.Count
+			videoInfo.IsFavorite = info.IsFavorite
+		}
+	}()
+
+	// get comment count
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		res, err := s.svcCtx.CommentClient.GetCommentCount(ctx, &comment.GetCommentCountReq{
+			VideoIdList: videoIdList,
+		})
+		if err != nil || res.Status != comment.Status_OK {
+			return
+		}
+
+		for _, info := range res.CommentCountList {
+			videoInfo := id2VideoInfo[info.VideoId]
+			videoInfo.CommentCount = info.Count
+		}
+	}()
+
+	wg.Wait()
+
+	return resp, nil
 }
