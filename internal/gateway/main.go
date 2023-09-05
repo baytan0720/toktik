@@ -34,7 +34,9 @@ func main() {
 	consulConfig := consulapi.DefaultConfig()
 	consulConfig.Address = consulAddr
 
-	router := server.Default()
+	router := server.Default(
+		server.WithHostPorts("0.0.0.0:8888"),
+	)
 
 	api.Register(router)
 

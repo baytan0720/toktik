@@ -45,13 +45,20 @@ type FeedResp struct {
 }
 
 func (api *FeedApi) Feed(c context.Context, ctx *app.RequestContext) {
-	latestTime, err := strconv.ParseInt(ctx.Query("latest_time"), 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &FeedResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  "invalid latest_time",
-		})
-		return
+	latestTimeStr := ctx.Query("latest_time")
+	var latestTime int64
+	if latestTimeStr == "" {
+		latestTime = time.Now().Unix()
+	} else {
+		var err error
+		latestTime, err = strconv.ParseInt(latestTimeStr, 10, 64)
+		if err != nil {
+			ctx.JSON(http.StatusOK, &FeedResp{
+				StatusCode: apiutil.StatusFailed,
+				StatusMsg:  "invalid latest_time",
+			})
+			return
+		}
 	}
 
 	resp, err := api.videoClient.Feed(c, &video.FeedReq{
