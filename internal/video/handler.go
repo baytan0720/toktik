@@ -38,7 +38,7 @@ func (s *VideoServiceImpl) PublishVideo(ctx context.Context, req *video.PublishV
 	filename := snowflake.Generate()
 	videoBucket := config.Conf.Get(config.KEY_MINIO_VIDEO_BUCKET).(string)
 	coverBucket := config.Conf.Get(config.KEY_MINIO_COVER_BUCKET).(string)
-	minioEndpoint := config.Conf.Get(config.KEY_MINIO_ENDPOINT).(string)
+	minioExpose := config.Conf.Get(config.KEY_MINIO_EXPOSE).(string)
 	mp4Type := "video/mp4"
 	JpegType := "image/jpeg"
 
@@ -50,8 +50,8 @@ func (s *VideoServiceImpl) PublishVideo(ctx context.Context, req *video.PublishV
 		return
 	}
 
-	playUrl := fmt.Sprintf("http://%s/%s/%s.mp4" + minioEndpoint + videoBucket + filename)
-	coverUrl := fmt.Sprintf("http://%s/%s/%s.jpg" + minioEndpoint + coverBucket + filename)
+	playUrl := fmt.Sprintf("http://%s/%s/%s.mp4", minioExpose, videoBucket, filename)
+	coverUrl := fmt.Sprintf("http://%s/%s/%s.jpg", minioExpose, coverBucket, filename)
 
 	// 异步生成封面
 	go func() {
