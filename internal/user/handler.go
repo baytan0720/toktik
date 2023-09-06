@@ -80,6 +80,9 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 		if err != nil || res.Status != relation.Status_OK {
 			return
 		}
+		if len(res.FollowInfoList) == 0 {
+			return
+		}
 		followInfo := res.FollowInfoList[0]
 		resp.User.FollowCount = followInfo.FollowCount
 		resp.User.FollowerCount = followInfo.FollowerCount
@@ -97,6 +100,9 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 		if err != nil || res.Status != favorite.Status_OK {
 			return
 		}
+		if len(res.FavoriteInfoList) == 0 {
+			return
+		}
 		favoriteInfo := res.FavoriteInfoList[0]
 		resp.User.FavoriteCount = favoriteInfo.FavoriteCount
 		resp.User.TotalFavorited = favoriteInfo.TotalFavorited
@@ -111,6 +117,9 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 			UserIdList: []int64{req.ToUserId},
 		})
 		if err != nil || res.Status != video.Status_OK {
+			return
+		}
+		if len(res.WorkCountList) == 0 {
 			return
 		}
 		workCountInfo := res.WorkCountList[0]

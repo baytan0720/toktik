@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cors"
 	consulapi "github.com/hashicorp/consul/api"
 
 	"toktik/internal/gateway/api"
@@ -36,7 +37,10 @@ func main() {
 
 	router := server.Default(
 		server.WithHostPorts("0.0.0.0:8888"),
+		server.WithKeepAlive(true),
 	)
+
+	router.Use(cors.Default())
 
 	api.Register(router)
 

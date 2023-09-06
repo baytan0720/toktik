@@ -30,7 +30,7 @@ func (api *FeedApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/feed",
+			Path:    "/douyin/feed/",
 			Handler: api.Feed,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},

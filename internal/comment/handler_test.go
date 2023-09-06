@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -41,28 +40,28 @@ func TestCommentServiceImpl_CreateComment(t *testing.T) {
 			}),
 		}
 		svc := NewCommentServiceImpl(svcCtx)
-		_, err := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
+		resp, _ := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
 			UserId:  1,
 			VideoId: 1,
 			Content: "any content",
 		})
-		assert.Error(t, err)
+		assert.Equal(t, comment.Status_ERROR, resp.Status)
 	})
 
 	t.Run("get user info failed", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
-		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
+		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{Status: user.Status_ERROR}, nil).AnyTimes()
 		svcCtx := &ctx.ServiceContext{
 			CommentService: newMockCommentService(t),
 			UserClient:     mockUserClient,
 		}
 		svc := NewCommentServiceImpl(svcCtx)
-		resp, err := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
+		resp, _ := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
 			UserId:  1,
 			VideoId: 1,
 			Content: "any content",
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, comment.Status_OK, resp.Status)
 		assert.Equal(t, resp.Comment.Content, "any content")
 		assert.Equal(t, resp.Comment.CreateDate, time.Now().Format("01-02"))
 		assert.Nil(t, resp.Comment.User)
@@ -76,12 +75,12 @@ func TestCommentServiceImpl_CreateComment(t *testing.T) {
 			UserClient:     mockUserClient,
 		}
 		svc := NewCommentServiceImpl(svcCtx)
-		resp, err := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
+		resp, _ := svc.CreateComment(context.Background(), &comment.CreateCommentReq{
 			UserId:  1,
 			VideoId: 1,
 			Content: "any content",
 		})
-		assert.NoError(t, err)
+		assert.Equal(t, comment.Status_OK, resp.Status)
 		assert.Equal(t, resp.Comment.Content, "any content")
 		assert.Equal(t, resp.Comment.CreateDate, time.Now().Format("01-02"))
 		assert.NotNil(t, resp.Comment.User)

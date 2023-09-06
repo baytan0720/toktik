@@ -2,11 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"log"
-
-	"gorm.io/gorm"
-
 	"toktik/internal/comment/kitex_gen/comment"
 	"toktik/internal/comment/pkg/ctx"
 	"toktik/internal/user/kitex_gen/user"
@@ -24,12 +19,14 @@ func NewCommentServiceImpl(svcCtx *ctx.ServiceContext) *CommentServiceImpl {
 }
 
 // CreateComment implements the CommentServiceImpl interface.
-func (s *CommentServiceImpl) CreateComment(ctx context.Context, req *comment.CreateCommentReq) (resp *comment.CreateCommentRes, err error) {
+func (s *CommentServiceImpl) CreateComment(ctx context.Context, req *comment.CreateCommentReq) (resp *comment.CreateCommentRes, _ error) {
 	resp = &comment.CreateCommentRes{}
 	commentInfo, err := s.svcCtx.CommentService.CreateComment(req.VideoId, req.UserId, req.Content)
 	if err != nil {
 		// internal error
-		return nil, err
+		resp.Status = comment.Status_ERROR
+		resp.ErrMsg = err.Error()
+		return
 	}
 
 	resp.Comment = &comment.CommentInfo{
@@ -40,39 +37,78 @@ func (s *CommentServiceImpl) CreateComment(ctx context.Context, req *comment.Cre
 
 	if res, err := s.svcCtx.UserClient.GetUserInfo(ctx, &user.GetUserInfoReq{
 		ToUserId: req.UserId,
-	}); err == nil {
+	}); err != nil {
+		resp.Status = comment.Status_ERROR
+		resp.ErrMsg = err.Error()
+	} else if res.Status == user.Status_OK {
 		resp.Comment.User = convert2CommentUserInfo(res.User)
-	} else {
-		log.Println("get user info failed:", err)
 	}
 
-	return resp, nil
+	return
 }
 
 // DeleteComment implements the CommentServiceImpl interface.
-func (s *CommentServiceImpl) DeleteComment(ctx context.Context, req *comment.DeleteCommentReq) (resp *comment.DeleteCommentRes, err error) {
+func (s *CommentServiceImpl) DeleteComment(ctx context.Context, req *comment.DeleteCommentReq) (resp *comment.DeleteCommentRes, _ error) {
 	resp = &comment.DeleteCommentRes{}
-	err = s.svcCtx.CommentService.DeleteComment(req.UserId, req.CommentId)
+	err := s.svcCtx.CommentService.DeleteComment(req.UserId, req.CommentId)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, errors.New("user id not match")) {
-			resp.Status = comment.Status_ERROR
-			resp.ErrMsg = err.Error()
-		} else {
-			return nil, err
-		}
+		resp.Status = comment.Status_ERROR
+		resp.ErrMsg = err.Error()
 	}
-	return resp, nil
+	return
 }
 
 // ListComment implements the CommentServiceImpl interface.
-func (s *CommentServiceImpl) ListComment(ctx context.Context, req *comment.ListCommentReq) (resp *comment.ListCommentRes, err error) {
-	// TODO: Your code here...
+func (s *CommentServiceImpl) ListComment(ctx context.Context, req *comment.ListCommentReq) (resp *comment.ListCommentRes, _ error) {
+	resp = &comment.ListCommentRes{}
+
+	commentInfos, err := s.svcCtx.CommentService.ListCommentOrderByCreatedAtDesc(req.VideoId)
+	if err != nil {
+		resp.Status = comment.Status_ERROR
+		resp.ErrMsg = err.Error()
+		return
+	}
+
+	for _, c := range commentInfos {
+		commentInfo := &comment.CommentInfo{
+			Id:         c.Id,
+			Content:    c.Content,
+			CreateDate: c.CreatedAt.Format("01-02"),
+		}
+		if res, err := s.svcCtx.UserClient.GetUserInfo(ctx, &user.GetUserInfoReq{
+			ToUserId: c.UserId,
+		}); err == nil {
+			commentInfo.User = convert2CommentUserInfo(res.User)
+		} else {
+			resp.Status = comment.Status_ERROR
+			resp.ErrMsg = err.Error()
+			return
+		}
+		resp.CommentList = append(resp.CommentList, commentInfo)
+	}
 	return
 }
 
 // GetCommentCount implements the CommentServiceImpl interface.
-func (s *CommentServiceImpl) GetCommentCount(ctx context.Context, req *comment.GetCommentCountReq) (resp *comment.GetCommentCountRes, err error) {
-	// TODO: Your code here...
+func (s *CommentServiceImpl) GetCommentCount(ctx context.Context, req *comment.GetCommentCountReq) (resp *comment.GetCommentCountRes, _ error) {
+	resp = &comment.GetCommentCountRes{}
+	videoIdList := req.VideoIdList
+	if len(videoIdList) == 0 {
+		return
+	}
+	for _, videoId := range videoIdList {
+		count, err := s.svcCtx.CommentService.CountComment(videoId)
+		if err != nil {
+			resp.Status = comment.Status_ERROR
+			resp.ErrMsg = err.Error()
+			return
+		}
+		resp.CommentCountList = append(resp.CommentCountList, &comment.CommentCountInfo{
+			VideoId: videoId,
+			Count:   count,
+		})
+	}
+
 	return
 }
 

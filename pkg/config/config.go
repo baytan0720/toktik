@@ -20,6 +20,7 @@ const (
 	KEY_MYSQL_DATABASE = "mysql.database"
 
 	KEY_MINIO_ENDPOINT     = "minio.endpoint"
+	KEY_MINIO_EXPOSE       = "minio.expose"
 	KEY_MINIO_ACCESS_KEY   = "minio.access_key"
 	KEY_MINIO_SECRET_KEY   = "minio.secret_key"
 	KEY_MINIO_VIDEO_BUCKET = "minio.video_bucket"

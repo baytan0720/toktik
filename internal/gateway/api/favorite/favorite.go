@@ -34,13 +34,13 @@ func (api *FavoriteApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/favorite/action",
+			Path:    "/douyin/favorite/action/",
 			Handler: api.Action,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/favorite/list",
+			Path:    "/douyin/favorite/list/",
 			Handler: api.List,
 			Hooks:   []app.HandlerFunc{middleware.SoftAuthCheck},
 		},

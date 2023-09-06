@@ -1,6 +1,8 @@
 package video
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 
 	"toktik/pkg/db/model"
@@ -66,8 +68,15 @@ func (s *VideoService) GetFeed(latestTime int64) ([]*Video, error) {
 	db := s.dbInstance()
 
 	videos := make([]*Video, 0)
-	err := db.Where("created_at < ?", latestTime).Order("created_at desc").Limit(20).Find(&videos).Error
-	if err != nil {
+	var timeValue time.Time
+
+	if latestTime == 0 {
+		timeValue = time.Now()
+	} else {
+		timeValue = time.Unix(latestTime / time.Microsecond.Nanoseconds(), 0)
+	}
+
+	if err := db.Where("created_at < ?", timeValue).Order("created_at desc").Limit(30).Find(&videos).Error; err != nil {
 		return nil, err
 	}
 

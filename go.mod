@@ -11,6 +11,7 @@ require (
 	github.com/glebarez/sqlite v1.9.0
 	github.com/golang/mock v1.6.0
 	github.com/hashicorp/consul/api v1.20.0
+	github.com/hertz-contrib/cors v0.0.0-20230423034624-2bc83a8400f0
 	github.com/kitex-contrib/registry-consul v0.0.0-20230406075225-7d341f036654
 	github.com/minio/minio-go/v6 v6.0.57
 	github.com/spf13/viper v1.16.0

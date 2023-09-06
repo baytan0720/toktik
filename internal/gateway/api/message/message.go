@@ -30,13 +30,13 @@ func (api *MessageApi) Routes() []apiutil.Route {
 	return []apiutil.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/douyin/message/action",
+			Path:    "/douyin/message/action/",
 			Handler: api.Action,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/douyin/message/chat",
+			Path:    "/douyin/message/chat/",
 			Handler: api.Chat,
 			Hooks:   []app.HandlerFunc{middleware.AuthCheck},
 		},
