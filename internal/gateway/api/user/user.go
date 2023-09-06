@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -15,11 +14,6 @@ import (
 	"toktik/internal/gateway/pkg/jwtutil"
 	"toktik/internal/user/kitex_gen/user"
 	"toktik/internal/user/kitex_gen/user/userservice"
-)
-
-var (
-	RegisterFail = "fail to register"
-	GetInfoFail  = "fail to get info"
 )
 
 type UserAPI struct {
@@ -53,48 +47,9 @@ func (api *UserAPI) Routes() []apiutil.Route {
 	}
 }
 
-type UserInfoRes struct {
-	StatusCode int            `json:"status_code"`
-	StatusMsg  string         `json:"status_msg"`
-	Info       *user.UserInfo `json:"user"`
-}
-
-func (api *UserAPI) UserInfo(c context.Context, ctx *app.RequestContext) {
-	//所请求的用户id
-	toUserId, err := strconv.ParseInt(ctx.Query("user_id"), 10, 64)
-
-	if err != nil {
-		ctx.JSON(http.StatusOK, &UserInfoRes{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-			Info:       nil,
-		})
-		return
-	}
-
-	userId := ctx.GetInt64(middleware.CTX_USER_ID)
-
-	resp, err := api.userClient.GetUserInfo(c, &user.GetUserInfoReq{
-		UserId:   userId,
-		ToUserId: toUserId,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &UserInfoRes{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &UserInfoRes{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
-		return
-	}
-	ctx.JSON(http.StatusOK, &UserInfoRes{
-		StatusCode: apiutil.StatusOK,
-		Info:       resp.User,
-	})
+type LoginOrRegisterReq struct {
+	Username string `query:"username,required"`
+	Password string `query:"password,required"`
 }
 
 type RegisterRes struct {
@@ -105,33 +60,32 @@ type RegisterRes struct {
 }
 
 func (api *UserAPI) Register(c context.Context, ctx *app.RequestContext) {
-	resp, err := api.userClient.Register(c, &user.RegisterReq{
-		Username: ctx.Query("username"),
-		Password: ctx.Query("password"),
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &RegisterRes{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &RegisterRes{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
+	params := &LoginOrRegisterReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
 		return
 	}
-	j := jwtutil.NewJwtUtil()
-	token, _ := j.GenerateToken(jwtutil.CreateClaims(resp.UserId))
-	ctx.JSON(http.StatusOK, &RegisterRes{
+
+	resp, err := api.userClient.Register(c, &user.RegisterReq{
+		Username: params.Username,
+		Password: params.Password,
+	})
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	token, err := jwtutil.GenerateTokenWithUserId(resp.UserId)
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &LoginRes{
 		StatusCode: apiutil.StatusOK,
 		UserId:     resp.UserId,
 		Token:      token,
 	})
 }
 
-type LoginResp struct {
+type LoginRes struct {
 	StatusCode int    `json:"status_code"`
 	StatusMsg  string `json:"status_msg"`
 	UserId     int64  `json:"user_id"`
@@ -139,29 +93,57 @@ type LoginResp struct {
 }
 
 func (api *UserAPI) Login(c context.Context, ctx *app.RequestContext) {
-	resp, err := api.userClient.Login(c, &user.LoginReq{
-		Username: ctx.Query("username"),
-		Password: ctx.Query("password"),
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &LoginResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &LoginResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
+	params := &LoginOrRegisterReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
 		return
 	}
 
-	j := jwtutil.NewJwtUtil()
-	token, _ := j.GenerateToken(jwtutil.CreateClaims(resp.UserId))
-	ctx.JSON(http.StatusOK, &LoginResp{
+	resp, err := api.userClient.Login(c, &user.LoginReq{
+		Username: params.Username,
+		Password: params.Password,
+	})
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	token, err := jwtutil.GenerateTokenWithUserId(resp.UserId)
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &LoginRes{
 		StatusCode: apiutil.StatusOK,
 		UserId:     resp.UserId,
 		Token:      token,
+	})
+}
+
+type UserInfoReq struct {
+	ToUserId int64 `query:"user_id,required"`
+}
+
+type UserInfoRes struct {
+	StatusCode int            `json:"status_code"`
+	StatusMsg  string         `json:"status_msg"`
+	Info       *user.UserInfo `json:"user"`
+}
+
+func (api *UserAPI) UserInfo(c context.Context, ctx *app.RequestContext) {
+	params := &UserInfoReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
+		return
+	}
+
+	resp, err := api.userClient.GetUserInfo(c, &user.GetUserInfoReq{
+		UserId:   ctx.GetInt64(middleware.CTX_USER_ID),
+		ToUserId: params.ToUserId,
+	})
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &UserInfoRes{
+		StatusCode: apiutil.StatusOK,
+		Info:       resp.User,
 	})
 }

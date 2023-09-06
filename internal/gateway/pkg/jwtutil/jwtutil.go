@@ -15,10 +15,10 @@ const (
 )
 
 var (
-	TokenExpired   = errors.New("token is expired")   //token过期
+	TokenExpired   = errors.New("token已过期")           //token过期
 	TokenMalformed = errors.New("token is malformed") //token格式不对
-	TokenInvalid   = errors.New("couldn't handle this token")
-	TokenEmpty     = errors.New("token is empty")
+	TokenInvalid   = errors.New("token无效")
+	TokenEmpty     = errors.New("token为空")
 )
 
 type JwtUtil struct {
@@ -29,6 +29,8 @@ type UserClaims struct {
 	UserId int64 `json:"user_id"`
 	jwt.StandardClaims
 }
+
+var jwtUtil *JwtUtil
 
 func NewJwtUtil() *JwtUtil {
 	return &JwtUtil{
@@ -81,4 +83,11 @@ func CreateClaims(id int64) *UserClaims {
 			NotBefore: time.Now().Unix() - START_TIME,
 		},
 	}
+}
+
+func GenerateTokenWithUserId(userId int64) (string, error) {
+	if jwtUtil == nil {
+		jwtUtil = NewJwtUtil()
+	}
+	return jwtUtil.GenerateToken(CreateClaims(userId))
 }
