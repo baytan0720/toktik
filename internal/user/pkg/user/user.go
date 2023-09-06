@@ -2,7 +2,6 @@ package user
 
 import (
 	"crypto/md5"
-	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -23,16 +22,6 @@ func NewUserService(db func() *gorm.DB) *UserService {
 }
 
 func (s *UserService) CreateUser(username, password string) (int64, error) {
-	if password == "" || username == "" {
-		return 0, errors.New("用户名或密码不能为空")
-	}
-	if len(password) < 6 {
-		return 0, errors.New("密码长度不能小于6位")
-	}
-	if len(password) > 32 {
-		return 0, errors.New("密码长度不能大于32位")
-	}
-
 	db := s.dbInstance()
 	password = fmt.Sprintf("%x", md5.Sum([]byte(password)))
 	user := User{
@@ -41,9 +30,6 @@ func (s *UserService) CreateUser(username, password string) (int64, error) {
 	}
 	err := db.Create(&user).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return 0, errors.New("用户名已被占用")
-		}
 		return 0, err
 	}
 	return user.Id, nil
@@ -55,9 +41,6 @@ func (s *UserService) Login(username, password string) (int64, error) {
 	user := User{}
 	err := db.Where("username = ? AND password = ?", username, password).First(&user).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, errors.New("用户名或密码错误")
-		}
 		return 0, err
 	}
 	return user.Id, nil
@@ -69,9 +52,6 @@ func (s *UserService) GetUserById(id int64) (*User, error) {
 	user := User{}
 	err := db.Where("id = ?", id).First(&user).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("用户不存在")
-		}
 		return nil, err
 	}
 	return &user, nil

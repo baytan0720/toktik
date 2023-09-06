@@ -49,18 +49,39 @@ func TestUserServiceImpl_Register(t *testing.T) {
 	}
 	svc := NewUserServiceImpl(svcCtx)
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success with valid chars", func(t *testing.T) {
 		resp, err := svc.Register(context.Background(), &user.RegisterReq{
-			Username: "test",
-			Password: "123456",
+			Username: "Test_用户123",
+			Password: "1Ab.~!@#$%^&*_-+?",
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, user.Status_OK, resp.Status)
+		assert.Empty(t, resp.ErrMsg)
+	})
+
+	t.Run("fail with invalid username", func(t *testing.T) {
+		resp, err := svc.Register(context.Background(), &user.RegisterReq{
+			Username: " (#@%",
+			Password: "123456",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, user.Status_ERROR, resp.Status)
+		assert.Equal(t, errInvalidCharsUsername.Error(), resp.ErrMsg)
+	})
+
+	t.Run("fail with invalid password", func(t *testing.T) {
+		resp, err := svc.Register(context.Background(), &user.RegisterReq{
+			Username: "test_user",
+			Password: "    <>|;",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, user.Status_ERROR, resp.Status)
+		assert.Equal(t, errInvalidCharsPassword.Error(), resp.ErrMsg)
 	})
 
 	t.Run("duplicate username", func(t *testing.T) {
 		resp, err := svc.Register(context.Background(), &user.RegisterReq{
-			Username: "test",
+			Username: "Test_用户123",
 			Password: "123456",
 		})
 		assert.NoError(t, err)
