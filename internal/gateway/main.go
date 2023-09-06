@@ -4,8 +4,8 @@ import (
 	"flag"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/hertz-contrib/cors"
 	consulapi "github.com/hashicorp/consul/api"
+	"github.com/hertz-contrib/cors"
 
 	"toktik/internal/gateway/api"
 	"toktik/pkg/config"
@@ -29,14 +29,14 @@ func main() {
 	} else {
 		conf = config.ReadConfigFromConsul(consulAddr)
 	}
-	conf.Set("name", "gateway")
-	conf.Set("consul", consulAddr)
+	conf.Set(config.KEY_SERVICE_NAME, "gateway")
+	conf.Set(config.KEY_CONSUL, consulAddr)
 
 	consulConfig := consulapi.DefaultConfig()
 	consulConfig.Address = consulAddr
 
 	router := server.Default(
-		server.WithHostPorts("0.0.0.0:8888"),
+		server.WithHostPorts(conf.GetString(config.KEY_LISTEN_ON)),
 		server.WithKeepAlive(true),
 	)
 

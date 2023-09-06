@@ -36,9 +36,9 @@ func NewVideoServiceImpl(svcCtx *ctx.ServiceContext) *VideoServiceImpl {
 func (s *VideoServiceImpl) PublishVideo(ctx context.Context, req *video.PublishVideoReq) (resp *video.PublishVideoRes, _ error) {
 	resp = &video.PublishVideoRes{}
 	filename := snowflake.Generate()
-	videoBucket := config.Conf.Get(config.KEY_MINIO_VIDEO_BUCKET).(string)
-	coverBucket := config.Conf.Get(config.KEY_MINIO_COVER_BUCKET).(string)
-	minioExpose := config.Conf.Get(config.KEY_MINIO_EXPOSE).(string)
+	videoBucket := config.Conf.GetString(config.KEY_MINIO_VIDEO_BUCKET)
+	coverBucket := config.Conf.GetString(config.KEY_MINIO_COVER_BUCKET)
+	minioExpose := config.Conf.GetString(config.KEY_MINIO_EXPOSE)
 	mp4Type := "video/mp4"
 	JpegType := "image/jpeg"
 

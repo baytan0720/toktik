@@ -65,6 +65,18 @@ func (c *ConsulConf) Get(key string) interface{} {
 	return val
 }
 
+// GetString value from config
+func (c *ConsulConf) GetString(key string) string {
+	val, _ := c.conf.Load(key)
+	return val.(string)
+}
+
+// GetInt value from config
+func (c *ConsulConf) GetInt(key string) int {
+	val, _ := c.conf.Load(key)
+	return val.(int)
+}
+
 // Watch config will update key-value and call handler when config changed
 func (c *ConsulConf) Watch(key string, handler func(cfg Config)) {
 	if handler == nil {
@@ -81,8 +93,9 @@ func (c *ConsulConf) watch() {
 
 		var wg sync.WaitGroup
 		for key, handler := range c.handlers {
+			wg.Add(1)
+
 			go func(key string, handler func(cfg Config)) {
-				wg.Add(1)
 				defer wg.Done()
 				pair, _, err := c.consulClient.KV().Get(key, nil)
 				if err != nil {

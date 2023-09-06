@@ -29,15 +29,15 @@ type ServiceContext struct {
 func NewServiceContext() *ServiceContext {
 	db.Init()
 	minioClient, err := minio.New(
-		config.Conf.Get(config.KEY_MINIO_ENDPOINT).(string),
-		config.Conf.Get(config.KEY_MINIO_ACCESS_KEY).(string),
-		config.Conf.Get(config.KEY_MINIO_SECRET_KEY).(string),
+		config.Conf.GetString(config.KEY_MINIO_ENDPOINT),
+		config.Conf.GetString(config.KEY_MINIO_ACCESS_KEY),
+		config.Conf.GetString(config.KEY_MINIO_SECRET_KEY),
 		false,
 	)
 	if err != nil {
 		log.Fatalln("connect to minio failed:", err)
 	}
-	r, err := consul.NewConsulResolver(config.Conf.Get("consul").(string))
+	r, err := consul.NewConsulResolver(config.Conf.GetString(config.KEY_CONSUL))
 	if err != nil {
 		log.Fatalln(err)
 	}

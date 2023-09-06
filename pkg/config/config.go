@@ -5,13 +5,20 @@ var Conf Config
 type Config interface {
 	Set(key string, value interface{})
 	Get(key string) interface{}
+	GetString(key string) string
+	GetInt(key string) int
 	Watch(key string, handler func(cfg Config))
 	watch()
 }
 
 // config key
 const (
-	KEY_RELEASE        = "release"
+	KEY_RELEASE      = "release"
+	KEY_SERVICE_NAME = "name"
+	KEY_LISTEN_ON    = "listen_on"
+
+	KEY_CONSUL = "consul"
+
 	KEY_MYSQL          = "mysql"
 	KEY_MYSQL_HOST     = "mysql.host"
 	KEY_MYSQL_PORT     = "mysql.port"
