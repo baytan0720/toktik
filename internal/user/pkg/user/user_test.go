@@ -3,10 +3,12 @@ package user
 import (
 	"crypto/md5"
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-	"testing"
+
 	"toktik/pkg/db/model"
 	"toktik/pkg/test/testutil"
 )
@@ -42,7 +44,7 @@ func TestUserService_Login(t *testing.T) {
 
 	t.Run("username not found", func(t *testing.T) {
 		_, err := s.Login("test", "123456")
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -57,7 +59,7 @@ func TestUserService_Login(t *testing.T) {
 
 	t.Run("password incorrect", func(t *testing.T) {
 		_, err := s.Login("test", "1234567")
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 }
 
@@ -81,7 +83,7 @@ func TestUserService_GetUserById(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		_, err := s.GetUserById(2)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 }
 
