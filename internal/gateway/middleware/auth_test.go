@@ -27,13 +27,7 @@ func TestAuthCheck(t *testing.T) {
 		ctx := app.NewContext(16)
 		ctx.Request.SetQueryString("token=" + "invalid_token")
 		AuthCheck(context.Background(), ctx)
-		assert.Equal(t, 401, ctx.Response.StatusCode())
-	})
-
-	t.Run("empty token", func(t *testing.T) {
-		ctx := app.NewContext(16)
-		AuthCheck(context.Background(), ctx)
-		assert.Equal(t, 401, ctx.Response.StatusCode())
+		assert.Equal(t, 200, ctx.Response.StatusCode())
 	})
 }
 

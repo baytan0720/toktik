@@ -14,14 +14,12 @@ const CTX_USER_ID = "user_id"
 
 func AuthCheck(c context.Context, ctx *app.RequestContext) {
 	token := ctx.Query("token")
-	jwtUtil := jwtutil.NewJwtUtil()
-	claims, err := jwtUtil.ParseToken(token)
+	claims, err := jwtutil.ParseToken(token)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
+		ctx.AbortWithStatusJSON(http.StatusOK, map[string]interface{}{
 			"status_code": apiutil.StatusFailed,
 			"status_msg":  err.Error(),
 		})
-		ctx.Abort()
 		return
 	}
 	ctx.Set(CTX_USER_ID, claims.UserId)
@@ -30,8 +28,7 @@ func AuthCheck(c context.Context, ctx *app.RequestContext) {
 
 func SoftAuthCheck(c context.Context, ctx *app.RequestContext) {
 	token := ctx.Query("token")
-	jwtUtil := jwtutil.NewJwtUtil()
-	claims, err := jwtUtil.ParseToken(token)
+	claims, err := jwtutil.ParseToken(token)
 	if err != nil {
 		ctx.Set(CTX_USER_ID, 0)
 	} else {
