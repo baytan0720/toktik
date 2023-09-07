@@ -21,73 +21,23 @@ func newMockUserClient(t *testing.T) *mock_userservice.MockClient {
 	return mock_userservice.NewMockClient(ctl)
 }
 
-func TestUserAPI_Login(t *testing.T) {
-	t.Run("rpc error", func(t *testing.T) {
-		mockUserClient := newMockUserClient(t)
-		api := &UserAPI{
-			userClient: mockUserClient,
-		}
-
-		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(nil, errors.New("rpc error")).AnyTimes()
-
-		ctx := app.NewContext(16)
-		ctx.Request.SetQueryString("username=test_user&password=123456")
-		api.Login(context.Background(), ctx)
-
-		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := LoginResp{}
-		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
-		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "rpc error", payload.StatusMsg)
-	})
-
-	t.Run("login failed", func(t *testing.T) {
-		mockUserClient := newMockUserClient(t)
-		api := &UserAPI{
-			userClient: mockUserClient,
-		}
-
-		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(&user.LoginRes{
-			Status: user.Status_ERROR,
-			ErrMsg: "password unmatch",
-		}, nil).AnyTimes()
-
-		ctx := app.NewContext(16)
-		ctx.Request.SetQueryString("username=test_user&password=123456")
-		api.Login(context.Background(), ctx)
-
-		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := LoginResp{}
-		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
-		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "password unmatch", payload.StatusMsg)
-	})
-
-	t.Run("login success", func(t *testing.T) {
-		mockUserClient := newMockUserClient(t)
-		api := &UserAPI{
-			userClient: mockUserClient,
-		}
-
-		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(&user.LoginRes{
-			Status: user.Status_OK,
-			UserId: 10,
-		}, nil).AnyTimes()
-
-		ctx := app.NewContext(16)
-		ctx.Request.SetQueryString("username=test_user&password=123456")
-		api.Login(context.Background(), ctx)
-
-		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := LoginResp{}
-		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
-		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
-		assert.Equal(t, int64(10), payload.UserId)
-		assert.NotEmpty(t, payload.Token)
-	})
-}
-
 func TestUserAPI_Register(t *testing.T) {
+	t.Run("invalid params", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		ctx := app.NewContext(16)
+		api.Register(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := RegisterRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, apiutil.ErrInvalidParams.Error(), payload.StatusMsg)
+	})
+
 	t.Run("rpc error", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
 		api := &UserAPI{
@@ -101,10 +51,10 @@ func TestUserAPI_Register(t *testing.T) {
 		api.Register(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := LoginResp{}
+		payload := LoginRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "rpc error", payload.StatusMsg)
+		assert.Equal(t, apiutil.ErrInternalError.Error(), payload.StatusMsg)
 	})
 
 	t.Run("Register failed", func(t *testing.T) {
@@ -115,7 +65,7 @@ func TestUserAPI_Register(t *testing.T) {
 
 		mockUserClient.EXPECT().Register(gomock.Any(), gomock.Any()).Return(&user.RegisterRes{
 			Status: user.Status_ERROR,
-			ErrMsg: RegisterFail,
+			ErrMsg: "用户名被占用",
 		}, nil).AnyTimes()
 
 		ctx := app.NewContext(16)
@@ -123,10 +73,10 @@ func TestUserAPI_Register(t *testing.T) {
 		api.Register(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := LoginResp{}
+		payload := LoginRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, RegisterFail, payload.StatusMsg)
+		assert.Equal(t, "用户名被占用", payload.StatusMsg)
 	})
 
 	t.Run("Register success", func(t *testing.T) {
@@ -153,7 +103,105 @@ func TestUserAPI_Register(t *testing.T) {
 	})
 }
 
+func TestUserAPI_Login(t *testing.T) {
+	t.Run("invalid params", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		ctx := app.NewContext(16)
+		api.Login(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := LoginRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, apiutil.ErrInvalidParams.Error(), payload.StatusMsg)
+	})
+
+	t.Run("rpc error", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(nil, errors.New("rpc error")).AnyTimes()
+
+		ctx := app.NewContext(16)
+		ctx.Request.SetQueryString("username=test_user&password=123456")
+		api.Login(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := LoginRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, apiutil.ErrInternalError.Error(), payload.StatusMsg)
+	})
+
+	t.Run("login failed", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(&user.LoginRes{
+			Status: user.Status_ERROR,
+			ErrMsg: "用户名或密码错误",
+		}, nil).AnyTimes()
+
+		ctx := app.NewContext(16)
+		ctx.Request.SetQueryString("username=test_user&password=123456")
+		api.Login(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := LoginRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, "用户名或密码错误", payload.StatusMsg)
+	})
+
+	t.Run("login success", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		mockUserClient.EXPECT().Login(gomock.Any(), gomock.Any()).Return(&user.LoginRes{
+			Status: user.Status_OK,
+			UserId: 10,
+		}, nil).AnyTimes()
+
+		ctx := app.NewContext(16)
+		ctx.Request.SetQueryString("username=test_user&password=123456")
+		api.Login(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := LoginRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
+		assert.Equal(t, int64(10), payload.UserId)
+		assert.NotEmpty(t, payload.Token)
+	})
+}
+
 func TestUserAPI_GetUserInfo(t *testing.T) {
+	t.Run("invalid params", func(t *testing.T) {
+		mockUserClient := newMockUserClient(t)
+		api := &UserAPI{
+			userClient: mockUserClient,
+		}
+
+		ctx := app.NewContext(16)
+		api.UserInfo(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := UserInfoRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, apiutil.ErrInvalidParams.Error(), payload.StatusMsg)
+	})
+
 	t.Run("rpc error", func(t *testing.T) {
 		mockUserClient := newMockUserClient(t)
 		api := &UserAPI{
@@ -170,7 +218,7 @@ func TestUserAPI_GetUserInfo(t *testing.T) {
 		payload := UserInfoRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "rpc error", payload.StatusMsg)
+		assert.Equal(t, apiutil.ErrInternalError.Error(), payload.StatusMsg)
 	})
 
 	t.Run("get info failed", func(t *testing.T) {
@@ -181,7 +229,7 @@ func TestUserAPI_GetUserInfo(t *testing.T) {
 
 		mockUserClient.EXPECT().GetUserInfo(gomock.Any(), gomock.Any()).Return(&user.GetUserInfoRes{
 			Status: user.Status_ERROR,
-			ErrMsg: GetInfoFail,
+			ErrMsg: "get user info failed",
 		}, nil).AnyTimes()
 
 		ctx := app.NewContext(16)
@@ -192,7 +240,7 @@ func TestUserAPI_GetUserInfo(t *testing.T) {
 		payload := UserInfoRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, GetInfoFail, payload.StatusMsg)
+		assert.Equal(t, "get user info failed", payload.StatusMsg)
 	})
 
 	t.Run("get info success", func(t *testing.T) {

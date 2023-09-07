@@ -1,6 +1,9 @@
 package apiutil
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
@@ -26,4 +29,29 @@ func AddRouters(r *server.Hertz, api APIRoutes) {
 			r.Any(route.Path, handlers...)
 		}
 	}
+}
+
+type H map[string]any
+
+func HandleError(ctx *app.RequestContext, err, errMsg error) bool {
+	if err != nil {
+		log.Println("[ERROR]:", err)
+		ctx.JSON(http.StatusOK, H{
+			"status_code": StatusFailed,
+			"status_msg":  errMsg.Error(),
+		})
+		return true
+	}
+	return false
+}
+
+func HandleRpcError(ctx *app.RequestContext, status int32, errMsg string) bool {
+	if status != 0 {
+		ctx.JSON(http.StatusOK, H{
+			"status_code": StatusFailed,
+			"status_msg":  errMsg,
+		})
+		return true
+	}
+	return false
 }
