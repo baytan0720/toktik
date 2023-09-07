@@ -31,8 +31,8 @@ func main() {
 	} else {
 		conf = config.ReadConfigFromConsul(consulAddr)
 	}
-	conf.Set("name", "message")
-	conf.Set("consul", consulAddr)
+	conf.Set(config.KEY_SERVICE_NAME, "message")
+	conf.Set(config.KEY_CONSUL, consulAddr)
 
 	r, err := consul.NewConsulRegister(consulAddr)
 	if err != nil {
@@ -40,9 +40,9 @@ func main() {
 	}
 
 	svr := message.NewServer(NewMessageServiceImpl(ctx.NewServiceContext()), server.WithRegistry(r), server.WithRegistryInfo(&registry.Info{
-		ServiceName: conf.Get("name").(string),
+		ServiceName: conf.GetString(config.KEY_SERVICE_NAME),
 		Tags: map[string]string{
-			"release": conf.Get("release").(string),
+			"release": conf.GetString(config.KEY_RELEASE),
 		},
 	}))
 	if err := svr.Run(); err != nil {

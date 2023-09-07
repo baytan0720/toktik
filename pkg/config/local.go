@@ -39,6 +39,14 @@ func (c *LocalConf) Get(key string) interface{} {
 	return c.conf.Get(key)
 }
 
+func (c *LocalConf) GetString(key string) string {
+	return c.conf.GetString(key)
+}
+
+func (c *LocalConf) GetInt(key string) int {
+	return c.conf.GetInt(key)
+}
+
 func (c *LocalConf) Watch(key string, handler func(cfg Config)) {
 	c.conf.WatchConfig()
 }

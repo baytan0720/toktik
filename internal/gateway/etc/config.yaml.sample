@@ -1,7 +1,2 @@
 Release: "dev"
-Mysql:
-  Host: "mysql"
-  Port: 3306
-  User: root
-  Password: "123456"
-  Database: "toktik"
+Listen_On: "0.0.0.0:8888"

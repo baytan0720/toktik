@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 )
 
 var db *gorm.DB
+var mu sync.Mutex
 
 func Init() {
 	cfg := config.Conf
@@ -29,18 +31,19 @@ func Init() {
 
 func Use(cfg config.Config) error {
 	dsn := generateDsn(
-		cfg.Get(config.KEY_MYSQL_HOST).(string),
-		cfg.Get(config.KEY_MYSQL_PORT).(int),
-		cfg.Get(config.KEY_MYSQL_USER).(string),
-		cfg.Get(config.KEY_MYSQL_PASSWORD).(string),
-		cfg.Get(config.KEY_MYSQL_DATABASE).(string),
+		cfg.GetString(config.KEY_MYSQL_HOST),
+		cfg.GetInt(config.KEY_MYSQL_PORT),
+		cfg.GetString(config.KEY_MYSQL_USER),
+		cfg.GetString(config.KEY_MYSQL_PASSWORD),
+		cfg.GetString(config.KEY_MYSQL_DATABASE),
 	)
 	newDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	close()
+	mu.Lock()
 	db = newDB
+	mu.Unlock()
 	err = db.AutoMigrate(&model.User{}, &model.Video{}, &model.Comment{}, &model.Relation{})
 	if err != nil {
 		return err
@@ -50,26 +53,12 @@ func Use(cfg config.Config) error {
 }
 
 func Instance() *gorm.DB {
+	mu.Lock()
+	defer mu.Unlock()
 	if db == nil {
 		log.Panic("db is nil")
 	}
 	return db
-}
-
-func close() {
-	if db == nil {
-		return
-	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	err = sqlDB.Close()
-	if err != nil {
-		log.Println(err)
-		return
-	}
 }
 
 func generateDsn(host string, port int, user string, password string, dbName string) string {

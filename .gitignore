@@ -13,3 +13,10 @@ kitex_gen/
 
 # Config
 config.yaml
+
+# Docker
+data/
+
+# Executable
+main
+ffmpeg

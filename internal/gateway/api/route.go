@@ -18,7 +18,7 @@ import (
 )
 
 func Register(r *server.Hertz) {
-	resolver, err := consul.NewConsulResolver(config.Conf.Get("consul").(string))
+	resolver, err := consul.NewConsulResolver(config.Conf.GetString(config.KEY_CONSUL))
 	if err != nil {
 		log.Fatalln(err)
 	}
