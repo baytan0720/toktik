@@ -91,3 +91,10 @@ func GenerateTokenWithUserId(userId int64) (string, error) {
 	}
 	return jwtUtil.GenerateToken(CreateClaims(userId))
 }
+
+func ParseToken(tokenStr string) (*UserClaims, error) {
+	if jwtUtil == nil {
+		jwtUtil = NewJwtUtil()
+	}
+	return jwtUtil.ParseToken(tokenStr)
+}
