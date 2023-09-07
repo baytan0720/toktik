@@ -1,0 +1,10 @@
+Minio:
+  Endpoint: "127.0.0.1:9000"
+  Access_Key: "admin"
+  Secret_Key: "Aa112211"
+  Buckets:
+    - "video"
+    - "cover"
+    - "avatar"
+    - "background"
+  Location: "asia-east-2"

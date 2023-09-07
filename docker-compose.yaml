@@ -42,21 +42,37 @@ services:
     restart: always
 
   minio:
-    image: minio/minio
+    build:
+      context: ./internal/agent
     command: server --console-address ":9090" -address ":9000" /data
     environment:
       - TZ=${TZ}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
     volumes:
       - ${DATA_PATH_HOST}/minio/data:/data
       - ${DATA_PATH_HOST}/minio/config:/root/.minio
     ports:
       - "${MINIO_CONSOLE_PORT}:9090"                          # 用于宿主机访问Minio Console
       - "${MINIO_API_PORT}:9000"                              # 用于宿主机访问Minio Api
-    restart: always
+    depends_on:
+      - rabbitmq
     networks:
       - backend
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3.8.9-management
+    environment:
+      - TZ=${TZ}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    networks:
+      - backend
+    restart: always
 
   user:
     build:
@@ -90,6 +106,7 @@ services:
       - redis
       - consul
       - minio
+      - rabbitmq
     networks:
       - backend
     restart: always
