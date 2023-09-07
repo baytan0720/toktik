@@ -5,7 +5,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -17,10 +16,6 @@ import (
 	"toktik/internal/gateway/pkg/jwtutil"
 	"toktik/internal/video/kitex_gen/video"
 	"toktik/internal/video/kitex_gen/video/videoservice"
-)
-
-var (
-	PublishFail = "fail to publish"
 )
 
 type PublishApi struct {
@@ -48,129 +43,81 @@ func (api *PublishApi) Routes() []apiutil.Route {
 	}
 }
 
-type ListResp struct {
+type PublishReq struct {
+	Token string                `form:"token"` // 用户鉴权token
+	Data  *multipart.FileHeader `form:"data"`  // 视频数据
+	Title string                `form:"title"` // 视频标题
+}
+
+type PublishRes struct {
+	StatusCode int    `json:"status_code"`
+	StatusMsg  string `json:"status_msg"`
+}
+
+func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
+	body := &PublishReq{}
+
+	if err := ctx.Bind(&body); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
+		return
+	}
+
+	// The token is put into the form data in this request,so we authenticate here
+	claim, err := jwtutil.ParseToken(body.Token)
+	if apiutil.HandleError(ctx, err, err) {
+		return
+	}
+
+	file, err := body.Data.Open()
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) {
+		return
+	}
+
+	defer file.Close()
+
+	fileBytes, err := io.ReadAll(file)
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) {
+		return
+	}
+
+	if resp, err := api.publishClient.PublishVideo(c, &video.PublishVideoReq{
+		UserId: claim.UserId,
+		Data:   fileBytes,
+		Title:  body.Title,
+	}); apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &PublishRes{
+		StatusCode: apiutil.StatusOK,
+	})
+}
+
+type ListReq struct {
+	UserId int64 `query:"user_id"`
+}
+
+type ListRes struct {
 	StatusCode int                `json:"status_code"`
 	StatusMsg  string             `json:"status_msg"`
 	VideoList  []*video.VideoInfo `json:"video_list"`
 }
 
 func (api *PublishApi) List(c context.Context, ctx *app.RequestContext) {
-	userId := ctx.GetInt64(middleware.CTX_USER_ID)
-	toUserId, err := strconv.ParseInt(ctx.Query("user_id"), 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-	resp, err := api.publishClient.ListVideo(c, &video.ListVideoReq{
-		UserId:   userId,
-		ToUserId: toUserId,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
+	params := &ListReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &ListResp{
+	resp, err := api.publishClient.ListVideo(c, &video.ListVideoReq{
+		UserId:   ctx.GetInt64(middleware.CTX_USER_ID),
+		ToUserId: params.UserId,
+	})
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &ListRes{
 		StatusCode: apiutil.StatusOK,
 		VideoList:  resp.VideoList,
-	})
-}
-
-type PublishResp struct {
-	StatusCode int    `json:"status_code"`
-	StatusMsg  string `json:"status_msg"`
-}
-
-type PublishReq struct {
-	Token string                `json:"token" form:"token" query:"token"` // 用户鉴权token
-	Data  *multipart.FileHeader `form:"data"`                                               // 视频数据
-	Title string                `json:"title" form:"title" query:"title"` // 视频标题
-}
-
-func (api *PublishApi) Action(c context.Context, ctx *app.RequestContext) {
-	body := &PublishReq{}
-
-	err := ctx.Bind(&body)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-
-	//The token is put into the body in this request,so we authenticate here
-	j := jwtutil.NewJwtUtil()
-	claim, err := j.ParseToken(body.Token)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-
-	file, err := body.Data.Open()
-	if err != nil {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-
-	defer func(file multipart.File) {
-		err := file.Close()
-		if err != nil {
-			ctx.JSON(http.StatusOK, &PublishResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  err.Error(),
-			})
-			return
-		}
-	}(file)
-
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-
-	resp, err := api.publishClient.PublishVideo(c, &video.PublishVideoReq{
-		UserId: claim.UserId,
-		Data:   fileBytes,
-		Title:  body.Title,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &PublishResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, &PublishResp{
-		StatusCode: apiutil.StatusOK,
 	})
 }
