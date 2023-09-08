@@ -1,9 +1,8 @@
 package api
 
 import (
-	"log"
-
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	consul "github.com/kitex-contrib/registry-consul"
 
 	"toktik/internal/gateway/api/comment"
@@ -14,13 +13,14 @@ import (
 	"toktik/internal/gateway/api/relation"
 	"toktik/internal/gateway/api/user"
 	"toktik/internal/gateway/pkg/apiutil"
+	"toktik/internal/gateway/pkg/logger"
 	"toktik/pkg/config"
 )
 
 func Register(r *server.Hertz) {
-	resolver, err := consul.NewConsulResolver(config.Conf.GetString(config.KEY_CONSUL))
+	resolver, err := consul.NewConsulResolver(config.GetString(config.KEY_CONSUL))
 	if err != nil {
-		log.Fatalln(err)
+		hlog.Fatal(err)
 	}
 
 	apiutil.AddRouters(r, user.NewUserAPI(resolver))
@@ -30,4 +30,6 @@ func Register(r *server.Hertz) {
 	apiutil.AddRouters(r, message.NewMessageApi(resolver))
 	apiutil.AddRouters(r, relation.NewRelationApi(resolver))
 	apiutil.AddRouters(r, publish.NewPublishApi(resolver))
+
+	r.Use(logger.LoggerHandler())
 }

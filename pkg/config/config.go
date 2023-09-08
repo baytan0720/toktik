@@ -37,6 +37,9 @@ const (
 	KEY_SERVICE_NAME = "name"
 	KEY_LISTEN_ON    = "listen_on"
 
+	KEY_LOGGER_LEVEL  = "logger.level"
+	KEY_LOGGER_OUTPUT = "logger.output"
+
 	KEY_CONSUL = "consul"
 
 	KEY_MYSQL          = "mysql"
