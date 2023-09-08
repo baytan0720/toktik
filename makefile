@@ -5,12 +5,13 @@ FAVORITE_SRC_PATH=internal/favorite
 COMMENT_SRC_PATH=internal/comment
 RELATION_SRC_PATH=internal/relation
 MESSAGE_SRC_PATH=internal/message
+AGENT_SRC_PATH=internal/agent
 KITEX_GEN_PATH=sh/kitex-gen.sh
 FFMPEG_SRC_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 FFMPEG_SRC_PATH=internal/video/ffmpeg
 exist = $(shell if [ -f $(FFMPEG_SRC_PATH) ]; then echo "true"; else echo "false"; fi)
 
-all: buildKitex buildUser buildVideo buildFavorite buildComment buildRelation buildMessage buildGateway download_ffmpeg
+all: buildKitex buildUser buildVideo buildFavorite buildComment buildRelation buildMessage buildGateway buildAgent download_ffmpeg
 
 buildKitex:
 	sh $(KITEX_GEN_PATH)
@@ -45,3 +46,6 @@ buildMessage:
 
 buildGateway:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(GATEWAY_SRC_PATH)/main $(GATEWAY_SRC_PATH)/*.go
+
+buildAgent:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(AGENT_SRC_PATH)/main $(AGENT_SRC_PATH)/*.go
