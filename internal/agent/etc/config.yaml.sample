@@ -2,9 +2,14 @@ Minio:
   Endpoint: "127.0.0.1:9000"
   Access_Key: "admin"
   Secret_Key: "Aa112211"
-  Buckets:
-    - "video"
-    - "cover"
-    - "avatar"
-    - "background"
+  Video_Bucket: "video"
+  Cover_Bucket: "cover"
+  Avatar_Bucket: "avatar"
+  Background_Bucket: "background"
   Location: "asia-east-2"
+RabbitMQ:
+  Host: "rabbitmq"
+  Port: 5672
+  User: "admin"
+  Password: "Aa112211"
+  Queue: "publish"

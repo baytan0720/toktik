@@ -4,13 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"os"
 	"sync"
 
 	"github.com/minio/minio-go/v6"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 
 	"toktik/internal/comment/kitex_gen/comment"
 	"toktik/internal/favorite/kitex_gen/favorite"
@@ -40,7 +36,6 @@ func (s *VideoServiceImpl) PublishVideo(ctx context.Context, req *video.PublishV
 	coverBucket := config.Conf.GetString(config.KEY_MINIO_COVER_BUCKET)
 	minioExpose := config.Conf.GetString(config.KEY_MINIO_EXPOSE)
 	mp4Type := "video/mp4"
-	JpegType := "image/jpeg"
 
 	// 上传视频
 	reader := bytes.NewReader(req.Data)
@@ -54,14 +49,12 @@ func (s *VideoServiceImpl) PublishVideo(ctx context.Context, req *video.PublishV
 	coverUrl := fmt.Sprintf("http://%s/%s/%s.jpg", minioExpose, coverBucket, filename)
 
 	// 异步生成封面
-	go func() {
-		// 获取封面
-		coverData, _ := readFrameAsJpeg(playUrl)
-
-		//上传封面
-		coverReader := bytes.NewReader(coverData)
-		_, _ = s.svcCtx.MinioClient.PutObject(coverBucket, filename+".jpg", coverReader, coverReader.Size(), minio.PutObjectOptions{ContentType: JpegType})
-	}()
+	err := s.svcCtx.MQ.Publish(filename)
+	if err != nil {
+		resp.Status = video.Status_ERROR
+		resp.ErrMsg = err.Error()
+		return
+	}
 
 	if err := s.svcCtx.VideoService.CreateVideo(req.UserId, req.Title, playUrl, coverUrl); err != nil {
 		resp.Status = video.Status_ERROR
@@ -378,29 +371,6 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedReq) (resp *
 	wg.Wait()
 
 	return resp, nil
-}
-
-// ReadFrameAsJpeg
-// 从视频流中截取一帧并返回 需要在本地环境中安装ffmpeg并将bin添加到环境变量
-func readFrameAsJpeg(filePath string) ([]byte, error) {
-	reader := bytes.NewBuffer(nil)
-	err := ffmpeg.Input(filePath).
-		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", 1)}).
-		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
-		WithOutput(reader, os.Stdout).
-		Run()
-	if err != nil {
-		return nil, err
-	}
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(bytes.Buffer)
-	_ = jpeg.Encode(buf, img, nil)
-
-	return buf.Bytes(), err
 }
 
 func convert2VideoUserInfo(user *user.UserInfo) *video.UserInfo {
