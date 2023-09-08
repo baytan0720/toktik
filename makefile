@@ -8,7 +8,7 @@ MESSAGE_SRC_PATH=internal/message
 AGENT_SRC_PATH=internal/agent
 KITEX_GEN_PATH=sh/kitex-gen.sh
 FFMPEG_SRC_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-FFMPEG_SRC_PATH=internal/video/ffmpeg
+FFMPEG_SRC_PATH=internal/agent/ffmpeg
 exist = $(shell if [ -f $(FFMPEG_SRC_PATH) ]; then echo "true"; else echo "false"; fi)
 
 all: buildKitex buildUser buildVideo buildFavorite buildComment buildRelation buildMessage buildGateway buildAgent download_ffmpeg

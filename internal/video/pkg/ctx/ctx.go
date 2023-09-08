@@ -14,6 +14,7 @@ import (
 	"toktik/internal/video/pkg/video"
 	"toktik/pkg/config"
 	"toktik/pkg/db"
+	"toktik/pkg/rabbitmq"
 )
 
 // ServiceContext contains the components required by the service.
@@ -23,6 +24,7 @@ type ServiceContext struct {
 	UserClient     user.Client
 	FavoriteClient favorite.Client
 	CommentClient  comment.Client
+	MQ             *rabbitmq.RabbitMQ
 }
 
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
@@ -37,7 +39,20 @@ func NewServiceContext() *ServiceContext {
 	if err != nil {
 		log.Fatalln("connect to minio failed:", err)
 	}
-	r, err := consul.NewConsulResolver(config.Conf.GetString(config.KEY_CONSUL))
+	r, err := consul.NewConsulResolver(config.GetString(config.KEY_CONSUL))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	mq, err := rabbitmq.NewProvider(
+		config.GetString(config.KEY_RABBITMQ_HOST),
+		config.GetString(config.KEY_RABBITMQ_PORT),
+		config.GetString(config.KEY_RABBITMQ_USER),
+		config.GetString(config.KEY_RABBITMQ_PASSWORD),
+		config.GetString(config.KEY_RABBITMQ_QUEUE),
+		config.GetString(config.KEY_RABBITMQ_EXCHANGE),
+		config.GetString(config.KEY_RABBITMQ_ROUTING_KEY),
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -48,5 +63,6 @@ func NewServiceContext() *ServiceContext {
 		UserClient:     user.MustNewClient("user", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
 		FavoriteClient: favorite.MustNewClient("favorite", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
 		CommentClient:  comment.MustNewClient("comment", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
+		MQ:             mq,
 	}
 }

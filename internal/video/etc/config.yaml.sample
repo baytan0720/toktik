@@ -12,3 +12,13 @@ Minio:
   Secret_Key: "Aa112211"
   Video_Bucket: "video"
   Cover_Bucket: "cover"
+  Avatar_Bucket: "avatar"
+  Background_Bucket: "background"
+RabbitMQ:
+  Host: "rabbitmq"
+  Port: 5672
+  User: "admin"
+  Password: "Aa112211"
+  Queue: "publish"
+  Exchange: "default"
+  Routing_Key: "publish"

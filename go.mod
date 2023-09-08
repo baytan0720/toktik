@@ -15,6 +15,7 @@ require (
 	github.com/kitex-contrib/registry-consul v0.0.0-20230406075225-7d341f036654
 	github.com/minio/minio-go/v6 v6.0.57
 	github.com/spf13/viper v1.16.0
+	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.8.3
 	github.com/u2takey/ffmpeg-go v0.5.0
 	google.golang.org/protobuf v1.31.0

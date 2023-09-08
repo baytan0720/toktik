@@ -10,4 +10,5 @@ ENV MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
 
 COPY main .
 COPY etc/config.yaml.sample /etc/config.yaml
+COPY ffmpeg /bin/ffmpeg
 ENTRYPOINT ["./main", "-config", "/etc/config.yaml"]
