@@ -8,6 +8,7 @@ import (
 	"github.com/hertz-contrib/cors"
 
 	"toktik/internal/gateway/api"
+	"toktik/internal/gateway/pkg/logger"
 	"toktik/pkg/config"
 )
 
@@ -32,12 +33,13 @@ func main() {
 	conf.Set(config.KEY_SERVICE_NAME, "gateway")
 	conf.Set(config.KEY_CONSUL, consulAddr)
 
+	logger.InitLogger()
+
 	consulConfig := consulapi.DefaultConfig()
 	consulConfig.Address = consulAddr
 
 	router := server.Default(
 		server.WithHostPorts(conf.GetString(config.KEY_LISTEN_ON)),
-		server.WithKeepAlive(true),
 	)
 
 	router.Use(cors.Default())

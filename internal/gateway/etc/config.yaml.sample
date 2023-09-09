@@ -1,2 +1,5 @@
 Release: "dev"
 Listen_On: "0.0.0.0:8888"
+Logger:
+  Level: "debug"    # debug, info, warn, error
+  Output: ""  # dir
