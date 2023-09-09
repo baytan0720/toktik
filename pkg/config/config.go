@@ -67,4 +67,7 @@ const (
 	KEY_RABBITMQ_QUEUE       = "rabbitmq.queue"
 	KEY_RABBITMQ_EXCHANGE    = "rabbitmq.exchange"
 	KEY_RABBITMQ_ROUTING_KEY = "rabbitmq.routing_key"
+
+	KEY_REDIS_ADDR     = "redis.addr"
+	KEY_REDIS_PASSWORD = "redis.password"
 )

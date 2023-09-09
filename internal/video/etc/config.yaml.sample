@@ -22,3 +22,6 @@ RabbitMQ:
   Queue: "publish"
   Exchange: "default"
   Routing_Key: "publish"
+Redis:
+  Addr: "localhost:6379"
+  Password: "123456"

@@ -15,6 +15,7 @@ import (
 	"toktik/pkg/config"
 	"toktik/pkg/db"
 	"toktik/pkg/rabbitmq"
+	"toktik/pkg/redis"
 )
 
 // ServiceContext contains the components required by the service.
@@ -30,6 +31,7 @@ type ServiceContext struct {
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
 func NewServiceContext() *ServiceContext {
 	db.Init()
+	redis.InitRedisClient()
 	minioClient, err := minio.New(
 		config.Conf.GetString(config.KEY_MINIO_ENDPOINT),
 		config.Conf.GetString(config.KEY_MINIO_ACCESS_KEY),
@@ -58,7 +60,7 @@ func NewServiceContext() *ServiceContext {
 	}
 
 	return &ServiceContext{
-		VideoService:   video.NewVideoService(db.Instance),
+		VideoService: video.NewVideoService(db.Instance, redis.Instance),
 		MinioClient:    minioClient,
 		UserClient:     user.MustNewClient("user", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
 		FavoriteClient: favorite.MustNewClient("favorite", client.WithResolver(r), client.WithRPCTimeout(time.Second*3)),
