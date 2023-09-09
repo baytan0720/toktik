@@ -22,7 +22,7 @@ type ServiceContext struct {
 // NewServiceContext initialize the components and returns a new ServiceContext instance.
 func NewServiceContext() *ServiceContext {
 	db.Init()
-	r, err := consul.NewConsulResolver(config.Conf.GetString(config.KEY_CONSUL))
+	r, err := consul.NewConsulResolver(config.GetString(config.KEY_CONSUL))
 	if err != nil {
 		log.Fatalln(err)
 	}
