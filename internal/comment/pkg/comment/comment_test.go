@@ -156,4 +156,10 @@ func TestCommentOperator_CountComment(t *testing.T) {
 	count, err := c.CountComment(testVideoId)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(3), count)
+
+	t.Run("no comment", func(t *testing.T) {
+		count, err := c.CountComment(100)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), count)
+	})
 }
