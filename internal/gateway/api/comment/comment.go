@@ -3,7 +3,6 @@ package comment
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -43,125 +42,83 @@ func (api *CommentApi) Routes() []apiutil.Route {
 	}
 }
 
-type ActionResp struct {
+type ActionReq struct {
+	ActionType  int    `query:"action_type,required"`
+	VideoId     int64  `query:"video_id"`
+	CommentText string `query:"comment_text"`
+	CommentId   int64  `query:"comment_id"`
+}
+
+type ActionRes struct {
 	StatusCode int                  `json:"status_code"`
 	StatusMsg  string               `json:"status_msg"`
 	Comment    *comment.CommentInfo `json:"comment"`
 }
 
 func (api *CommentApi) Action(c context.Context, ctx *app.RequestContext) {
-	actionType, err := strconv.Atoi(ctx.Query("action_type"))
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ActionResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
+	params := &ActionReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
 		return
 	}
-	videoId, err := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ActionResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-	switch actionType {
+
+	switch params.ActionType {
 	case 1:
 		resp, err := api.commentClient.CreateComment(c, &comment.CreateCommentReq{
 			UserId:  ctx.GetInt64(middleware.CTX_USER_ID),
-			VideoId: videoId,
-			Content: ctx.Query("comment_text"),
+			VideoId: params.VideoId,
+			Content: params.CommentText,
 		})
-		if err != nil {
-			ctx.JSON(http.StatusOK, &ActionResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  err.Error(),
-			})
-			return
-		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusOK, &ActionResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  resp.ErrMsg,
-			})
+		if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
 			return
 		}
-		ctx.JSON(http.StatusOK, &ActionResp{
+		ctx.JSON(http.StatusOK, &ActionRes{
 			StatusCode: apiutil.StatusOK,
 			Comment:    resp.Comment,
 		})
 	case 2:
-		commentId, err := strconv.ParseInt(ctx.Query("comment_id"), 10, 64)
-		if err != nil {
-			ctx.JSON(http.StatusOK, &ActionResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  err.Error(),
-			})
-			return
-		}
 		resp, err := api.commentClient.DeleteComment(c, &comment.DeleteCommentReq{
 			UserId:    ctx.GetInt64(middleware.CTX_USER_ID),
-			CommentId: commentId,
+			CommentId: params.CommentId,
 		})
-		if err != nil {
-			ctx.JSON(http.StatusOK, &ActionResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  err.Error(),
-			})
-			return
-		} else if resp.Status != 0 {
-			ctx.JSON(http.StatusOK, &ActionResp{
-				StatusCode: apiutil.StatusFailed,
-				StatusMsg:  resp.ErrMsg,
-			})
+		if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
 			return
 		}
-		ctx.JSON(http.StatusOK, &ActionResp{
+		ctx.JSON(http.StatusOK, &ActionRes{
 			StatusCode: apiutil.StatusOK,
 		})
 	default:
-		ctx.JSON(http.StatusOK, &ActionResp{
+		ctx.JSON(http.StatusOK, &ActionRes{
 			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  "action_type error",
+			StatusMsg:  apiutil.ErrInvalidParams.Error(),
 		})
 	}
 }
 
-type ListResp struct {
-	StatusCode  int
-	StatusMsg   string
-	CommentList []*comment.CommentInfo
+type ListReq struct {
+	VideoId int64 `query:"video_id,required"`
+}
+
+type ListRes struct {
+	StatusCode  int                    `json:"status_code"`
+	StatusMsg   string                 `json:"status_msg"`
+	CommentList []*comment.CommentInfo `json:"comment_list"`
 }
 
 func (api *CommentApi) List(c context.Context, ctx *app.RequestContext) {
-	userId := ctx.GetInt64(middleware.CTX_USER_ID)
-	videoId, err := strconv.ParseInt(ctx.Query("video_id"), 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-	resp, err := api.commentClient.ListComment(c, &comment.ListCommentReq{
-		UserId:  userId,
-		VideoId: videoId,
-	})
-	if err != nil {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  err.Error(),
-		})
-		return
-	} else if resp.Status != 0 {
-		ctx.JSON(http.StatusOK, &ListResp{
-			StatusCode: apiutil.StatusFailed,
-			StatusMsg:  resp.ErrMsg,
-		})
+	params := &ListReq{}
+	if err := ctx.Bind(params); apiutil.HandleError(ctx, err, apiutil.ErrInvalidParams) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &ListResp{
+	resp, err := api.commentClient.ListComment(c, &comment.ListCommentReq{
+		UserId:  ctx.GetInt64(middleware.CTX_USER_ID),
+		VideoId: params.VideoId,
+	})
+	if apiutil.HandleError(ctx, err, apiutil.ErrInternalError) || apiutil.HandleRpcError(ctx, int32(resp.Status), resp.ErrMsg) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &ListRes{
 		StatusCode:  apiutil.StatusOK,
 		CommentList: resp.CommentList,
 	})
