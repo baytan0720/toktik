@@ -155,6 +155,12 @@ func (s *VideoServiceImpl) ListVideo(ctx context.Context, req *video.ListVideoRe
 	return
 }
 
+// ListVideoId implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) ListVideoId(ctx context.Context, req *video.ListVideoIdReq) (resp *video.ListVideoIdRes, err error) {
+	// TODO: Your code here...
+	return
+}
+
 // GetVideo implements the VideoServiceImpl interface.
 func (s *VideoServiceImpl) GetVideo(ctx context.Context, req *video.GetVideoReq) (resp *video.GetVideoRes, err error) {
 	resp = &video.GetVideoRes{}
@@ -268,6 +274,12 @@ func (s *VideoServiceImpl) GetWorkCount(ctx context.Context, req *video.GetWorkC
 		})
 	}
 
+	return
+}
+
+// IsExist implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) IsExist(ctx context.Context, req *video.IsExistReq) (resp *video.IsExistRes, err error) {
+	// TODO: Your code here...
 	return
 }
 
