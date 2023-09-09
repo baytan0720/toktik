@@ -22,6 +22,23 @@ func newMockCommentClient(t *testing.T) *mock_commentservice.MockClient {
 }
 
 func TestUserAPI_Action(t *testing.T) {
+	t.Run("with invalid action type", func(t *testing.T) {
+		mockUserClient := newMockCommentClient(t)
+		api := &CommentApi{
+			commentClient: mockUserClient,
+		}
+
+		ctx := app.NewContext(16)
+		ctx.Request.SetQueryString("video_id=10&action_type=10&comment_text='that's awesome!'")
+		api.Action(context.Background(), ctx)
+
+		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
+		payload := ActionRes{}
+		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
+		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
+		assert.Equal(t, apiutil.ErrInvalidParams.Error(), payload.StatusMsg)
+	})
+
 	t.Run("rpc error", func(t *testing.T) {
 		mockUserClient := newMockCommentClient(t)
 		api := &CommentApi{
@@ -35,10 +52,10 @@ func TestUserAPI_Action(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ActionResp{}
+		payload := ActionRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "rpc error", payload.StatusMsg)
+		assert.Equal(t, apiutil.ErrInternalError.Error(), payload.StatusMsg)
 	})
 
 	t.Run("comment failed", func(t *testing.T) {
@@ -57,7 +74,7 @@ func TestUserAPI_Action(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ActionResp{}
+		payload := ActionRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
 		assert.Equal(t, "fail to comment", payload.StatusMsg)
@@ -85,7 +102,7 @@ func TestUserAPI_Action(t *testing.T) {
 		api.Action(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ActionResp{}
+		payload := ActionRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
 		assert.EqualValues(t, info, payload.Comment)
@@ -106,10 +123,10 @@ func TestUserAPI_List(t *testing.T) {
 		api.List(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ListResp{}
+		payload := ListRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
-		assert.Equal(t, "rpc error", payload.StatusMsg)
+		assert.Equal(t, apiutil.ErrInternalError.Error(), payload.StatusMsg)
 	})
 
 	t.Run("list failed", func(t *testing.T) {
@@ -128,7 +145,7 @@ func TestUserAPI_List(t *testing.T) {
 		api.List(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ListResp{}
+		payload := ListRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusFailed, payload.StatusCode)
 		assert.Equal(t, "fail to list", payload.StatusMsg)
@@ -151,7 +168,7 @@ func TestUserAPI_List(t *testing.T) {
 		api.List(context.Background(), ctx)
 
 		assert.Equal(t, http.StatusOK, ctx.Response.StatusCode())
-		payload := ListResp{}
+		payload := ListRes{}
 		assert.NoError(t, json.Unmarshal(ctx.Response.Body(), &payload))
 		assert.Equal(t, apiutil.StatusOK, payload.StatusCode)
 		assert.Equal(t, infos, payload.CommentList)
