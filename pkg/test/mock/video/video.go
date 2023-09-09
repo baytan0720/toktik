@@ -96,6 +96,26 @@ func (mr *MockClientMockRecorder) GetWorkCount(ctx, Req interface{}, callOptions
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkCount", reflect.TypeOf((*MockClient)(nil).GetWorkCount), varargs...)
 }
 
+// IsExist mocks base method.
+func (m *MockClient) IsExist(ctx context.Context, Req *video.IsExistReq, callOptions ...callopt.Option) (*video.IsExistRes, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, Req}
+	for _, a := range callOptions {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "IsExist", varargs...)
+	ret0, _ := ret[0].(*video.IsExistRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsExist indicates an expected call of IsExist.
+func (mr *MockClientMockRecorder) IsExist(ctx, Req interface{}, callOptions ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, Req}, callOptions...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExist", reflect.TypeOf((*MockClient)(nil).IsExist), varargs...)
+}
+
 // ListVideo mocks base method.
 func (m *MockClient) ListVideo(ctx context.Context, Req *video.ListVideoReq, callOptions ...callopt.Option) (*video.ListVideoRes, error) {
 	m.ctrl.T.Helper()
@@ -114,6 +134,26 @@ func (mr *MockClientMockRecorder) ListVideo(ctx, Req interface{}, callOptions ..
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, Req}, callOptions...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVideo", reflect.TypeOf((*MockClient)(nil).ListVideo), varargs...)
+}
+
+// ListVideoId mocks base method.
+func (m *MockClient) ListVideoId(ctx context.Context, Req *video.ListVideoIdReq, callOptions ...callopt.Option) (*video.ListVideoIdRes, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, Req}
+	for _, a := range callOptions {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListVideoId", varargs...)
+	ret0, _ := ret[0].(*video.ListVideoIdRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVideoId indicates an expected call of ListVideoId.
+func (mr *MockClientMockRecorder) ListVideoId(ctx, Req interface{}, callOptions ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, Req}, callOptions...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVideoId", reflect.TypeOf((*MockClient)(nil).ListVideoId), varargs...)
 }
 
 // PublishVideo mocks base method.
