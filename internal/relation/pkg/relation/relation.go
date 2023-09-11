@@ -22,11 +22,25 @@ func NewRelationService(db func() *gorm.DB) *RelationService {
 	}
 }
 
-func (r *RelationService) GetFollowRelations(userId int64, toUserIdList []int64) (relations []Relation, err error) {
+func (r *RelationService) GetFollows(userId int64, toUserIdList []int64) (isFollowMap map[int64]bool, err error) {
 	db := r.dbInstance()
 
+	if userId == 0 {
+		return map[int64]bool{}, nil
+	}
+
+	relations := make([]Relation, 0)
 	err = db.Where("to_user_id in ?", toUserIdList).Where(&Relation{UserId: userId}).Find(&relations).Error
 
+	if err != nil {
+		return
+	}
+
+	isFollowMap = make(map[int64]bool)
+	for _, relation := range relations {
+		isFollowMap[relation.ToUserId] = relation.IsFollow
+	}
+	
 	return
 }
 
