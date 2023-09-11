@@ -21,19 +21,28 @@ func NewRelationServiceImpl(svcCtx *ctx.ServiceContext) *RelationServiceImpl {
 	}
 }
 
+// Error messages.
+var (
+	errGetFollowInfoFailed    = "获取关注信息失败"
+	errGetFollowCountFailed   = "获取关注数量失败"
+	errGetFollowerCountFailed = "获取粉丝数量失败"
+	errFollowFailed           = "关注失败"
+	errUnfollowFailed         = "取消关注失败"
+	errListFollowFailed       = "获取关注列表失败"
+	errListFollowerFailed     = "获取粉丝列表失败"
+	errIsFollowFailed         = "判断是否关注失败"
+	errGetUserInfoFailed      = "获取用户信息失败"
+)
+
 // GetFollowInfo implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) GetFollowInfo(ctx context.Context, req *relation.GetFollowInfoReq) (resp *relation.GetFollowInfoRes, _ error) {
 	resp = &relation.GetFollowInfoRes{}
 
-	relations, err := s.svcCtx.RelationService.GetFollowRelations(req.UserId, req.ToUserIdList)
+	isFollowMap, err := s.svcCtx.RelationService.GetFollows(req.UserId, req.ToUserIdList)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errGetFollowInfoFailed
 		return
-	}
-	isFollowMap := make(map[int64]bool)
-	for _, r := range relations {
-		isFollowMap[r.ToUserId] = r.IsFollow
 	}
 
 	resp.FollowInfoList = make([]*relation.FollowInfo, 0, len(req.ToUserIdList))
@@ -42,13 +51,13 @@ func (s *RelationServiceImpl) GetFollowInfo(ctx context.Context, req *relation.G
 		followCount, err := s.svcCtx.RelationService.GetFollowCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowCountFailed
 			return
 		}
 		followerCount, err := s.svcCtx.RelationService.GetFollowerCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowerCountFailed
 			return
 		}
 		resp.FollowInfoList = append(resp.FollowInfoList, &relation.FollowInfo{
@@ -72,7 +81,7 @@ func (s *RelationServiceImpl) Follow(ctx context.Context, req *relation.FollowRe
 		ToUserId: req.ToUserId,
 	}); err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errGetUserInfoFailed
 		return
 	} else if res.Status != user.Status_OK {
 		resp.Status = relation.Status_ERROR
@@ -82,7 +91,7 @@ func (s *RelationServiceImpl) Follow(ctx context.Context, req *relation.FollowRe
 	err := s.svcCtx.RelationService.Follow(req.UserId, req.ToUserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errFollowFailed
 	}
 	return
 }
@@ -93,7 +102,7 @@ func (s *RelationServiceImpl) Unfollow(ctx context.Context, req *relation.Unfoll
 	err := s.svcCtx.RelationService.Unfollow(req.UserId, req.ToUserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errUnfollowFailed
 	}
 	return
 }
@@ -105,7 +114,7 @@ func (s *RelationServiceImpl) ListFollow(ctx context.Context, req *relation.List
 	userIdList, err := s.svcCtx.RelationService.ListFollow(req.UserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errListFollowFailed
 		return
 	}
 
@@ -116,13 +125,13 @@ func (s *RelationServiceImpl) ListFollow(ctx context.Context, req *relation.List
 		followCount, err := s.svcCtx.RelationService.GetFollowCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowCountFailed
 			return
 		}
 		followerCount, err := s.svcCtx.RelationService.GetFollowerCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowerCountFailed
 			return
 		}
 		userId2UserInfo[toUserId] = &relation.UserInfo{
@@ -153,7 +162,7 @@ func (s *RelationServiceImpl) ListFollower(ctx context.Context, req *relation.Li
 	userIdList, err := s.svcCtx.RelationService.ListFollower(req.UserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errListFollowerFailed
 		return
 	}
 
@@ -164,19 +173,19 @@ func (s *RelationServiceImpl) ListFollower(ctx context.Context, req *relation.Li
 		isFollow, err := s.svcCtx.RelationService.IsFollow(req.UserId, toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errIsFollowFailed
 			return
 		}
 		followCount, err := s.svcCtx.RelationService.GetFollowCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowCountFailed
 			return
 		}
 		followerCount, err := s.svcCtx.RelationService.GetFollowerCount(toUserId)
 		if err != nil {
 			resp.Status = relation.Status_ERROR
-			resp.ErrMsg = err.Error()
+			resp.ErrMsg = errGetFollowerCountFailed
 			return
 		}
 		userId2UserInfo[toUserId] = &relation.UserInfo{
@@ -208,13 +217,13 @@ func (s *RelationServiceImpl) ListFriend(ctx context.Context, req *relation.List
 	followList, err := s.svcCtx.RelationService.ListFollow(req.UserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errListFollowFailed
 		return
 	}
 	followerList, err := s.svcCtx.RelationService.ListFollower(req.UserId)
 	if err != nil {
 		resp.Status = relation.Status_ERROR
-		resp.ErrMsg = err.Error()
+		resp.ErrMsg = errListFollowerFailed
 		return
 	}
 
@@ -264,13 +273,13 @@ func (s *RelationServiceImpl) ListFriend(ctx context.Context, req *relation.List
 			followCount, err := s.svcCtx.RelationService.GetFollowCount(userId)
 			if err != nil {
 				resp.Status = relation.Status_ERROR
-				resp.ErrMsg = err.Error()
+				resp.ErrMsg = errGetFollowCountFailed
 				return
 			}
 			followerCount, err := s.svcCtx.RelationService.GetFollowerCount(userId)
 			if err != nil {
 				resp.Status = relation.Status_ERROR
-				resp.ErrMsg = err.Error()
+				resp.ErrMsg = errGetFollowerCountFailed
 				return
 			}
 			userId2UserInfo[toUserId] = &relation.UserInfo{

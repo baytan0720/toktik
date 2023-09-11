@@ -47,8 +47,8 @@ func TestRelationOperator_GetFollowInfo(t *testing.T) {
 	db.Create(testRelationCaseB)
 	db.Create(testRelationCaseC)
 
-	// Test GetFollowRelations
-	relations, err := r.GetFollowRelations(10, []int64{11, 12, 13})
+	// Test GetFollows
+	relations, err := r.GetFollows(10, []int64{11, 12, 13})
 	require.NoError(t, err)
 	assert.Equal(t, 2, len(relations))
 
